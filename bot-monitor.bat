@@ -53,7 +53,7 @@ echo [%date% %time%] 🎯 Starting server.js...
 echo [%date% %time%] ========================================
 echo.
 
-node app/server.js
+node server.js
 
 :: Check if the process exited with an error
 if errorlevel 1 (
