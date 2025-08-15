@@ -122,7 +122,13 @@ The application will:
 ### 💀 Bot Death
 - **🔍 Pattern**: `Oh dear, you are dead!`
 - **📤 Action**: Sends notification to bot-specific webhook when bot dies
-- **💡 Example**: `Oh dear, you are dead!` → "💀 **Bot Died!**\n**Bot:** MyBot\n"
+- **💡 Example**: `Oh dear, you are dead!` → "💀 **Bot Died!**\n**Bot:** MyBot"
+
+### 💰 Valuable Drops
+- **🔍 Pattern**: `[INFO] [GAME] <col=<any_color>>Valuable drop: <item> (<coins> coins)</col>`
+- **📤 Action**: Sends notification to bot-specific webhook with item name and coin value
+- **💡 Example**: `[INFO] [GAME] <col=ef1020>Valuable drop: Onyx (3,038,047 coins)</col>` → "💰 **Valuable Drop!**\n**Bot:** MyBot\n**Item:** Onyx\n**Value:** 3,038,047 coins"
+- **⚠️ NOTE**: This trigger is controlled by the valuable drop setting in OSRS, make sure to set it to true and value threshold you want
 
 ## 🛠️ Development
 
@@ -134,7 +140,7 @@ The application will:
 ### 💬 Adding New Message Types
 1. 📝 Define the message format in `app/constants.js`
 2. 🎨 Create a formatter function in `app/utils/messageFormatter.js`
-3. 🔄 Update the monitor to use the new formatter
+3. 🔄 Update the `processLogFile` to use the new formatter
 
 ## 📦 Dependencies
 

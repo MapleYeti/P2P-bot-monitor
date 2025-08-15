@@ -109,6 +109,21 @@ export function formatDeathMessage(botName) {
 }
 
 /**
+ * Format valuable drop message
+ * @param {string} itemName - The item name
+ * @param {string} coinValue - The coin value
+ * @param {string} botName - The bot name
+ * @returns {string} - Formatted message
+ */
+export function formatValuableDropMessage(itemName, coinValue, botName) {
+    return formatMessage(MESSAGE_FORMATS.VALUABLE_DROP, {
+        item: itemName,
+        coins: coinValue,
+        bot: botName
+    });
+}
+
+/**
  * Sanitize message content for Discord
  * @param {string} content - Raw message content
  * @returns {string} - Sanitized content

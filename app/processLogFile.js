@@ -7,7 +7,7 @@ import axios from 'axios';
 import { getBotWebhookUrl } from './utils/webhookUtils.js';
 
 import { chat, webhook, error } from './utils/logger.js';
-import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage, formatQuestCompleteMessage, formatBreakOverMessage, formatDeathMessage } from './utils/messageFormatter.js';
+import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage, formatQuestCompleteMessage, formatBreakOverMessage, formatDeathMessage, formatValuableDropMessage } from './utils/messageFormatter.js';
 import { LOG_PATTERNS } from './constants.js';
 import config from '../config.js';
 
@@ -115,6 +115,18 @@ async function processDeath(botName, botWebhookUrl) {
 }
 
 /**
+ * Process valuable drop event
+ * @param {string} itemName - The name of the valuable item dropped
+ * @param {string} coinValue - The coin value of the item
+ * @param {string} botName - The bot name
+ * @param {string} botWebhookUrl - The bot's specific webhook URL
+ */
+async function processValuableDrop(itemName, coinValue, botName, botWebhookUrl) {
+  const dropMessage = formatValuableDropMessage(itemName, coinValue, botName);
+  await sendWebhook(botWebhookUrl, { content: dropMessage }, `valuable drop: ${itemName} (${coinValue} coins)`);
+}
+
+/**
  * Process a single log line and extract relevant information
  * @param {string} line - The log line to process
  * @param {string} filePath - The file path for context
@@ -176,6 +188,15 @@ async function processLogLine(line, filePath, botName, botWebhookUrl) {
   const deathMatch = line.match(LOG_PATTERNS.DEATH);
   if (deathMatch) {
     await processDeath(botName, botWebhookUrl);
+    return;
+  }
+
+  // Check for valuable drop
+  const valuableDropMatch = line.match(LOG_PATTERNS.VALUABLE_DROP);
+  if (valuableDropMatch) {
+    const itemName = valuableDropMatch[1];
+    const coinValue = valuableDropMatch[2]; // Assuming coin value is the second part of the match
+    await processValuableDrop(itemName, coinValue, botName, botWebhookUrl);
     return;
   }
 }

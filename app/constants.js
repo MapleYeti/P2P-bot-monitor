@@ -17,7 +17,8 @@ export const LOG_PATTERNS = {
     QUEST: /completed a quest: <col=.+?>(.+?)<\/col>/i,
     BREAK: /\[SCRIPT\] Break length (\d+)/,
     BREAK_OVER: /\[SCRIPT\] Break over/,
-    DEATH: /Oh dear, you are dead!/
+    DEATH: /Oh dear, you are dead!/,
+    VALUABLE_DROP: /\[INFO\] \[GAME\] <col=.+?>Valuable drop: (.+?) \((\d+(?:,\d+)*) coins\)<\/col>/
 };
 
 // Discord message formatting
@@ -28,7 +29,8 @@ export const MESSAGE_FORMATS = {
     QUEST_COMPLETE: '🏆 **Quest Complete!**\n**Bot:** {bot}\n**Quest:** {quest}',
     BREAK_START: '💤 **Bot Break Started!**\n**Bot:** {bot}\n**Break Duration:** {duration}',
     BREAK_OVER: '⏰ **Bot Break Finished!**\n**Bot:** {bot}',
-    DEATH: '💀 **Bot Died!**\n**Bot:** {bot}'
+    DEATH: '💀 **Bot Died!**\n**Bot:** {bot}',
+    VALUABLE_DROP: '💰 **Valuable Drop!**\n**Bot:** {bot}\n**Item:** {item}\n**Value:** {coins} coins'
 };
 
 // Error messages
