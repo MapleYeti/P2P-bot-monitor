@@ -5,10 +5,10 @@ import readline from 'readline';
 import axios from 'axios';
 
 import { getBotWebhookUrl } from './utils/webhookUtils.js';
-import { getLevelUpMessage } from './utils/levelUpUtils.js';
+
 import { getQuestMessage } from './utils/questUtils.js';
 import { chat, webhook, error } from './utils/logger.js';
-import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage } from './utils/messageFormatter.js';
+import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage } from './utils/messageFormatter.js';
 import { LOG_PATTERNS } from './constants.js';
 import config from '../config.js';
 
@@ -69,7 +69,7 @@ async function processBotResponse(responseMessage, chatMessage, botName) {
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processLevelUp(skill, level, botName, botWebhookUrl) {
-  const levelUpMessage = getLevelUpMessage(skill, level);
+  const levelUpMessage = formatLevelUpMessage(skill, level);
   await sendWebhook(botWebhookUrl, { content: levelUpMessage }, `level up: ${skill} → ${level}`);
 }
 

@@ -1,9 +1,4 @@
-export function getLevelUpMessage(skill, level) {
-    const levelUpIcon = getLevelUpIcon(skill);
-    return `📈 ${levelUpIcon} **${skill}** has leveled up to **${level}**`;
-}
-
-function getLevelUpIcon(skill) {
+export function getSkillIcon(skill) {
     switch (skill) {
         //F2P skills
         case "Attack":

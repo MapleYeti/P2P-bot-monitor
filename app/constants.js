@@ -22,7 +22,7 @@ export const LOG_PATTERNS = {
 export const MESSAGE_FORMATS = {
     CHAT_DETECTED: '💬 **Chat Detected:** {chat}\n**Bot:** {bot}\n**Status:** No Response given',
     BOT_RESPONSE: '🤖 **Bot:** {bot}\n📩 **Chat:** {chat}\n💬 **Response:** {response}',
-    LEVEL_UP: '🎉 **Level Up!**\n**Bot:** {bot}\n**Skill:** {skill}\n**New Level:** {level}',
+    LEVEL_UP: '📈${levelUpIcon} **${skill}** has leveled up to **${level}**',
     QUEST_COMPLETE: '🏆 **Quest Complete!**\n**Bot:** {bot}\n**Quest:** {quest}',
     BREAK_START: '💤 **Bot Break Started!**\n**Bot:** {bot}\n**Break Duration:** {duration}'
 };

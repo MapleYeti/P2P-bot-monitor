@@ -1,4 +1,5 @@
 import { MESSAGE_FORMATS } from '../constants.js';
+import { getSkillIcon } from './skillUtils.js'
 import { getFormattedBreakDuration } from './breakUtils.js';
 
 /**
@@ -49,7 +50,9 @@ export function formatBotResponseMessage(chatMessage, responseMessage, botName) 
  * @returns {string} - Formatted message
  */
 export function formatLevelUpMessage(skill, level, botName) {
+    const skillEmoji = getSkillIcon(skill);
     return formatMessage(MESSAGE_FORMATS.LEVEL_UP, {
+        skillEmoji,
         skill,
         level,
         bot: botName
