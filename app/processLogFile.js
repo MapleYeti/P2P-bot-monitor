@@ -8,7 +8,7 @@ import { getBotWebhookUrl } from './utils/webhookUtils.js';
 import { getLevelUpMessage } from './utils/levelUpUtils.js';
 import { getQuestMessage } from './utils/questUtils.js';
 import { chat, webhook, error } from './utils/logger.js';
-import { formatChatDetectedMessage, formatBotResponseMessage } from './utils/messageFormatter.js';
+import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage } from './utils/messageFormatter.js';
 import { LOG_PATTERNS } from './constants.js';
 import config from '../config.js';
 
@@ -85,6 +85,17 @@ async function processQuestCompletion(quest, botName, botWebhookUrl) {
 }
 
 /**
+ * Process break start event
+ * @param {string} breakLength - Break length in milliseconds
+ * @param {string} botName - The bot name
+ * @param {string} botWebhookUrl - The bot's specific webhook URL
+ */
+async function processBreakStart(breakLength, botName, botWebhookUrl) {
+  const breakMessage = formatBreakStartMessage(breakLength, botName);
+  await sendWebhook(botWebhookUrl, { content: breakMessage }, `break start: ${breakLength}ms`);
+}
+
+/**
  * Process a single log line and extract relevant information
  * @param {string} line - The log line to process
  * @param {string} filePath - The file path for context
@@ -124,6 +135,14 @@ async function processLogLine(line, filePath, botName, botWebhookUrl) {
   if (questMatch) {
     const quest = questMatch[1];
     await processQuestCompletion(quest, botName, botWebhookUrl);
+    return;
+  }
+
+  // Check for break start
+  const breakMatch = line.match(LOG_PATTERNS.BREAK);
+  if (breakMatch) {
+    const breakLength = breakMatch[1];
+    await processBreakStart(breakLength, botName, botWebhookUrl);
     return;
   }
 }

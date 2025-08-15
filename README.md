@@ -25,6 +25,7 @@ P2P-bot-monitor/
 │       ├── 💬 messageFormatter.js # Discord message formatting
 │       ├── 📈 levelUpUtils.js  # Level up message formatting
 │       ├── 🏆 questUtils.js    # Quest completion formatting
+│       ├── 💤 breakUtils.js    # Break duration formatting
 │       └── 🔗 webhookUtils.js  # Webhook URL management
 ├── 🛠️ utils/
 │   └── ✅ configValidator.js   # Configuration validation
@@ -107,6 +108,11 @@ The application will:
 ### 🏆 Quest Completions
 - **🔍 Pattern**: `completed a quest: <col=...><quest_name></col>`
 - **📤 Action**: Sends notification to bot-specific webhook
+
+### ☕ Bot Breaks
+- **🔍 Pattern**: `[SCRIPT] Break length <milliseconds>`
+- **📤 Action**: Sends notification to bot-specific webhook with human-readable duration
+- **💡 Example**: `[SCRIPT] Break length 12860461` → "💤 **Bot Break Started!**\n**Bot:** MyBot\n**Break Duration:** 3 hours 34 minutes 20 seconds"
 
 ## 🛠️ Development
 

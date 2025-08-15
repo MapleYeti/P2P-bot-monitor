@@ -1,4 +1,5 @@
 import { MESSAGE_FORMATS } from '../constants.js';
+import { getFormattedBreakDuration } from './breakUtils.js';
 
 /**
  * Format a message using a template and variables
@@ -64,6 +65,20 @@ export function formatLevelUpMessage(skill, level, botName) {
 export function formatQuestCompleteMessage(quest, botName) {
     return formatMessage(MESSAGE_FORMATS.QUEST_COMPLETE, {
         quest,
+        bot: botName
+    });
+}
+
+/**
+ * Format break start message
+ * @param {string} breakLength - Break length in milliseconds
+ * @param {string} botName - The bot name
+ * @returns {string} - Formatted message
+ */
+export function formatBreakStartMessage(breakLength, botName) {
+    const duration = getFormattedBreakDuration(breakLength);
+    return formatMessage(MESSAGE_FORMATS.BREAK_START, {
+        duration,
         bot: botName
     });
 }
