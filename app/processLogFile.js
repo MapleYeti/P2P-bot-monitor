@@ -6,9 +6,8 @@ import axios from 'axios';
 
 import { getBotWebhookUrl } from './utils/webhookUtils.js';
 
-import { getQuestMessage } from './utils/questUtils.js';
 import { chat, webhook, error } from './utils/logger.js';
-import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage } from './utils/messageFormatter.js';
+import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage, formatQuestCompleteMessage } from './utils/messageFormatter.js';
 import { LOG_PATTERNS } from './constants.js';
 import config from '../config.js';
 
@@ -80,7 +79,7 @@ async function processLevelUp(skill, level, botName, botWebhookUrl) {
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processQuestCompletion(quest, botName, botWebhookUrl) {
-  const questMessage = getQuestMessage(quest, botName);
+  const questMessage = formatQuestCompleteMessage(quest, botName);
   await sendWebhook(botWebhookUrl, { content: questMessage }, `quest: ${quest}`);
 }
 
