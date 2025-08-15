@@ -7,7 +7,7 @@ import axios from 'axios';
 import { getBotWebhookUrl } from './utils/webhookUtils.js';
 
 import { chat, webhook, error } from './utils/logger.js';
-import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage, formatQuestCompleteMessage, formatBreakOverMessage } from './utils/messageFormatter.js';
+import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage, formatQuestCompleteMessage, formatBreakOverMessage, formatDeathMessage } from './utils/messageFormatter.js';
 import { LOG_PATTERNS } from './constants.js';
 import config from '../config.js';
 
@@ -105,6 +105,16 @@ async function processBreakOver(botName, botWebhookUrl) {
 }
 
 /**
+ * Process death event
+ * @param {string} botName - The bot name
+ * @param {string} botWebhookUrl - The bot's specific webhook URL
+ */
+async function processDeath(botName, botWebhookUrl) {
+  const deathMessage = formatDeathMessage(botName);
+  await sendWebhook(botWebhookUrl, { content: deathMessage }, 'death');
+}
+
+/**
  * Process a single log line and extract relevant information
  * @param {string} line - The log line to process
  * @param {string} filePath - The file path for context
@@ -159,6 +169,13 @@ async function processLogLine(line, filePath, botName, botWebhookUrl) {
   const breakOverMatch = line.match(LOG_PATTERNS.BREAK_OVER);
   if (breakOverMatch) {
     await processBreakOver(botName, botWebhookUrl);
+    return;
+  }
+
+  // Check for death
+  const deathMatch = line.match(LOG_PATTERNS.DEATH);
+  if (deathMatch) {
+    await processDeath(botName, botWebhookUrl);
     return;
   }
 }

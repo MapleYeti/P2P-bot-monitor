@@ -16,7 +16,8 @@ export const LOG_PATTERNS = {
     LEVEL_UP: /you've just advanced your (.+?) level\. You are now level (\d+)/i,
     QUEST: /completed a quest: <col=.+?>(.+?)<\/col>/i,
     BREAK: /\[SCRIPT\] Break length (\d+)/,
-    BREAK_OVER: /\[SCRIPT\] Break over/
+    BREAK_OVER: /\[SCRIPT\] Break over/,
+    DEATH: /Oh dear, you are dead!/
 };
 
 // Discord message formatting
@@ -26,7 +27,8 @@ export const MESSAGE_FORMATS = {
     LEVEL_UP: '📈{skillEmoji} **{skill}** has leveled up to **{level}**',
     QUEST_COMPLETE: '🏆 **Quest Complete!**\n**Bot:** {bot}\n**Quest:** {quest}',
     BREAK_START: '💤 **Bot Break Started!**\n**Bot:** {bot}\n**Break Duration:** {duration}',
-    BREAK_OVER: '⏰ **Bot Break Finished!**\n**Bot:** {bot}\n**Status:** Back to work!'
+    BREAK_OVER: '⏰ **Bot Break Finished!**\n**Bot:** {bot}',
+    DEATH: '💀 **Bot Died!**\n**Bot:** {bot}'
 };
 
 // Error messages

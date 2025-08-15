@@ -98,6 +98,17 @@ export function formatBreakOverMessage(botName) {
 }
 
 /**
+ * Format death message
+ * @param {string} botName - The bot name
+ * @returns {string} - Formatted message
+ */
+export function formatDeathMessage(botName) {
+    return formatMessage(MESSAGE_FORMATS.DEATH, {
+        bot: botName
+    });
+}
+
+/**
  * Sanitize message content for Discord
  * @param {string} content - Raw message content
  * @returns {string} - Sanitized content

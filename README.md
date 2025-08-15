@@ -117,7 +117,12 @@ The application will:
 ### ✅ Break Finished
 - **🔍 Pattern**: `[SCRIPT] Break over`
 - **📤 Action**: Sends notification to bot-specific webhook when break ends
-- **💡 Example**: `[SCRIPT] Break over` → "✅ **Bot Break Finished!**\n**Bot:** MyBot\n**Status:** Back to work!"
+- **💡 Example**: `[SCRIPT] Break over` → "⏰ **Bot Break Finished!**\n**Bot:** MyBot"
+
+### 💀 Bot Death
+- **🔍 Pattern**: `Oh dear, you are dead!`
+- **📤 Action**: Sends notification to bot-specific webhook when bot dies
+- **💡 Example**: `Oh dear, you are dead!` → "💀 **Bot Died!**\n**Bot:** MyBot\n"
 
 ## 🛠️ Development
 
