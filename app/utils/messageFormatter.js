@@ -1,6 +1,6 @@
-import { MESSAGE_FORMATS } from '../constants.js';
-import { getSkillIcon } from './skillUtils.js'
-import { getFormattedBreakDuration } from './breakUtils.js';
+import { MESSAGE_FORMATS } from "../constants.js";
+import { getSkillIcon } from "./skillUtils.js";
+import { getFormattedBreakDuration } from "./breakUtils.js";
 
 /**
  * Format a message using a template and variables
@@ -9,9 +9,9 @@ import { getFormattedBreakDuration } from './breakUtils.js';
  * @returns {string} - Formatted message
  */
 function formatMessage(template, variables) {
-    return template.replace(/\{(\w+)\}/g, (match, key) => {
-        return variables[key] || match;
-    });
+  return template.replace(/\{(\w+)\}/g, (match, key) => {
+    return variables[key] || match;
+  });
 }
 
 /**
@@ -21,10 +21,10 @@ function formatMessage(template, variables) {
  * @returns {string} - Formatted message
  */
 export function formatChatDetectedMessage(chatMessage, botName) {
-    return formatMessage(MESSAGE_FORMATS.CHAT_DETECTED, {
-        chat: chatMessage,
-        bot: botName
-    });
+  return formatMessage(MESSAGE_FORMATS.CHAT_DETECTED, {
+    chat: chatMessage,
+    bot: botName,
+  });
 }
 
 /**
@@ -34,12 +34,16 @@ export function formatChatDetectedMessage(chatMessage, botName) {
  * @param {string} botName - The bot name
  * @returns {string} - Formatted message
  */
-export function formatBotResponseMessage(chatMessage, responseMessage, botName) {
-    return formatMessage(MESSAGE_FORMATS.BOT_RESPONSE, {
-        chat: chatMessage,
-        response: responseMessage,
-        bot: botName
-    });
+export function formatBotResponseMessage(
+  chatMessage,
+  responseMessage,
+  botName
+) {
+  return formatMessage(MESSAGE_FORMATS.BOT_RESPONSE, {
+    chat: chatMessage,
+    response: responseMessage,
+    bot: botName,
+  });
 }
 
 /**
@@ -50,13 +54,13 @@ export function formatBotResponseMessage(chatMessage, responseMessage, botName) 
  * @returns {string} - Formatted message
  */
 export function formatLevelUpMessage(skill, level, botName) {
-    const skillEmoji = getSkillIcon(skill);
-    return formatMessage(MESSAGE_FORMATS.LEVEL_UP, {
-        skillEmoji,
-        skill,
-        level,
-        bot: botName
-    });
+  const skillEmoji = getSkillIcon(skill);
+  return formatMessage(MESSAGE_FORMATS.LEVEL_UP, {
+    skillEmoji,
+    skill,
+    level,
+    bot: botName,
+  });
 }
 
 /**
@@ -66,10 +70,10 @@ export function formatLevelUpMessage(skill, level, botName) {
  * @returns {string} - Formatted message
  */
 export function formatQuestCompleteMessage(quest, botName) {
-    return formatMessage(MESSAGE_FORMATS.QUEST_COMPLETE, {
-        quest,
-        bot: botName
-    });
+  return formatMessage(MESSAGE_FORMATS.QUEST_COMPLETE, {
+    quest,
+    bot: botName,
+  });
 }
 
 /**
@@ -79,11 +83,11 @@ export function formatQuestCompleteMessage(quest, botName) {
  * @returns {string} - Formatted message
  */
 export function formatBreakStartMessage(breakLength, botName) {
-    const duration = getFormattedBreakDuration(breakLength);
-    return formatMessage(MESSAGE_FORMATS.BREAK_START, {
-        duration,
-        bot: botName
-    });
+  const duration = getFormattedBreakDuration(breakLength);
+  return formatMessage(MESSAGE_FORMATS.BREAK_START, {
+    duration,
+    bot: botName,
+  });
 }
 
 /**
@@ -92,9 +96,9 @@ export function formatBreakStartMessage(breakLength, botName) {
  * @returns {string} - Formatted message
  */
 export function formatBreakOverMessage(botName) {
-    return formatMessage(MESSAGE_FORMATS.BREAK_OVER, {
-        bot: botName
-    });
+  return formatMessage(MESSAGE_FORMATS.BREAK_OVER, {
+    bot: botName,
+  });
 }
 
 /**
@@ -103,9 +107,9 @@ export function formatBreakOverMessage(botName) {
  * @returns {string} - Formatted message
  */
 export function formatDeathMessage(botName) {
-    return formatMessage(MESSAGE_FORMATS.DEATH, {
-        bot: botName
-    });
+  return formatMessage(MESSAGE_FORMATS.DEATH, {
+    bot: botName,
+  });
 }
 
 /**
@@ -116,11 +120,11 @@ export function formatDeathMessage(botName) {
  * @returns {string} - Formatted message
  */
 export function formatValuableDropMessage(itemName, coinValue, botName) {
-    return formatMessage(MESSAGE_FORMATS.VALUABLE_DROP, {
-        item: itemName,
-        coins: coinValue,
-        bot: botName
-    });
+  return formatMessage(MESSAGE_FORMATS.VALUABLE_DROP, {
+    item: itemName,
+    coins: coinValue,
+    bot: botName,
+  });
 }
 
 /**
@@ -129,12 +133,12 @@ export function formatValuableDropMessage(itemName, coinValue, botName) {
  * @returns {string} - Sanitized content
  */
 export function sanitizeDiscordMessage(content) {
-    return content
-        .replace(/\\/g, '\\\\')  // Escape backslashes
-        .replace(/`/g, '\\`')    // Escape code blocks
-        .replace(/\*/g, '\\*')   // Escape bold/italic
-        .replace(/_/g, '\\_')    // Escape underline
-        .replace(/~/g, '\\~')    // Escape strikethrough
-        .replace(/>/g, '\\>')    // Escape blockquotes
-        .replace(/\|/g, '\\|');  // Escape spoilers
+  return content
+    .replace(/\\/g, "\\\\") // Escape backslashes
+    .replace(/`/g, "\\`") // Escape code blocks
+    .replace(/\*/g, "\\*") // Escape bold/italic
+    .replace(/_/g, "\\_") // Escape underline
+    .replace(/~/g, "\\~") // Escape strikethrough
+    .replace(/>/g, "\\>") // Escape blockquotes
+    .replace(/\|/g, "\\|"); // Escape spoilers
 }

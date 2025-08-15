@@ -3,17 +3,17 @@
  */
 
 const LOG_LEVELS = {
-    INFO: 'INFO',
-    WARN: 'WARN',
-    ERROR: 'ERROR',
-    SUCCESS: 'SUCCESS'
+  INFO: "INFO",
+  WARN: "WARN",
+  ERROR: "ERROR",
+  SUCCESS: "SUCCESS",
 };
 
 const EMOJIS = {
-    [LOG_LEVELS.INFO]: 'ℹ️',
-    [LOG_LEVELS.WARN]: '⚠️',
-    [LOG_LEVELS.ERROR]: '❌',
-    [LOG_LEVELS.SUCCESS]: '✅'
+  [LOG_LEVELS.INFO]: "ℹ️",
+  [LOG_LEVELS.WARN]: "⚠️",
+  [LOG_LEVELS.ERROR]: "❌",
+  [LOG_LEVELS.SUCCESS]: "✅",
 };
 
 /**
@@ -21,7 +21,7 @@ const EMOJIS = {
  * @returns {string} Formatted timestamp
  */
 function getTimestamp() {
-    return new Date().toISOString();
+  return new Date().toISOString();
 }
 
 /**
@@ -30,12 +30,12 @@ function getTimestamp() {
  * @param {string} message - Message to log
  * @param {string} context - Optional context
  */
-function log(level, message, context = '') {
-    const timestamp = getTimestamp();
-    const emoji = EMOJIS[level] || '📝';
-    const contextStr = context ? ` [${context}]` : '';
+function log(level, message, context = "") {
+  const timestamp = getTimestamp();
+  const emoji = EMOJIS[level] || "📝";
+  const contextStr = context ? ` [${context}]` : "";
 
-    console.log(`${emoji} ${timestamp} ${level}${contextStr}: ${message}`);
+  console.log(`${emoji} ${timestamp} ${level}${contextStr}: ${message}`);
 }
 
 /**
@@ -43,8 +43,8 @@ function log(level, message, context = '') {
  * @param {string} message - Message to log
  * @param {string} context - Optional context
  */
-export function info(message, context = '') {
-    log(LOG_LEVELS.INFO, message, context);
+export function info(message, context = "") {
+  log(LOG_LEVELS.INFO, message, context);
 }
 
 /**
@@ -52,8 +52,8 @@ export function info(message, context = '') {
  * @param {string} message - Message to log
  * @param {string} context - Optional context
  */
-export function warn(message, context = '') {
-    log(LOG_LEVELS.WARN, message, context);
+export function warn(message, context = "") {
+  log(LOG_LEVELS.WARN, message, context);
 }
 
 /**
@@ -61,8 +61,8 @@ export function warn(message, context = '') {
  * @param {string} message - Message to log
  * @param {string} context - Optional context
  */
-export function error(message, context = '') {
-    log(LOG_LEVELS.ERROR, message, context);
+export function error(message, context = "") {
+  log(LOG_LEVELS.ERROR, message, context);
 }
 
 /**
@@ -70,8 +70,8 @@ export function error(message, context = '') {
  * @param {string} message - Message to log
  * @param {string} context - Optional context
  */
-export function success(message, context = '') {
-    log(LOG_LEVELS.SUCCESS, message, context);
+export function success(message, context = "") {
+  log(LOG_LEVELS.SUCCESS, message, context);
 }
 
 /**
@@ -79,9 +79,9 @@ export function success(message, context = '') {
  * @param {string} message - Chat message
  * @param {string} botName - Bot name
  */
-export function chat(message, botName = '') {
-    const context = botName ? `Chat [${botName}]` : 'Chat';
-    console.log(`💬 ${getTimestamp()} ${context}: ${message}`);
+export function chat(message, botName = "") {
+  const context = botName ? `Chat [${botName}]` : "Chat";
+  console.log(`💬 ${getTimestamp()} ${context}: ${message}`);
 }
 
 /**
@@ -90,9 +90,9 @@ export function chat(message, botName = '') {
  * @param {string} context - What the webhook was for
  */
 export function webhook(status, context) {
-    if (status === 'success') {
-        success(`Webhook sent for ${context}`);
-    } else {
-        error(`Webhook failed for ${context}`);
-    }
+  if (status === "success") {
+    success(`Webhook sent for ${context}`);
+  } else {
+    error(`Webhook failed for ${context}`);
+  }
 }

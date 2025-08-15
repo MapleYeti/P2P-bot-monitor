@@ -1,15 +1,23 @@
+import path from "path";
+import fs from "fs";
+import readline from "readline";
+import axios from "axios";
 
-import path from 'path';
-import fs from 'fs';
-import readline from 'readline';
-import axios from 'axios';
+import { getBotWebhookUrl } from "./utils/webhookUtils.js";
 
-import { getBotWebhookUrl } from './utils/webhookUtils.js';
-
-import { chat, webhook, error } from './utils/logger.js';
-import { formatChatDetectedMessage, formatBotResponseMessage, formatBreakStartMessage, formatLevelUpMessage, formatQuestCompleteMessage, formatBreakOverMessage, formatDeathMessage, formatValuableDropMessage } from './utils/messageFormatter.js';
-import { LOG_PATTERNS } from './constants.js';
-import config from '../config.js';
+import { chat, webhook, error } from "./utils/logger.js";
+import {
+  formatChatDetectedMessage,
+  formatBotResponseMessage,
+  formatBreakStartMessage,
+  formatLevelUpMessage,
+  formatQuestCompleteMessage,
+  formatBreakOverMessage,
+  formatDeathMessage,
+  formatValuableDropMessage,
+} from "./utils/messageFormatter.js";
+import { LOG_PATTERNS } from "./constants.js";
+import config from "../config.js";
 
 // Constants
 const BOT_CHAT_WEBHOOK_URL = config.BOT_CHAT_WEBHOOK_URL;
@@ -27,10 +35,10 @@ const lastChatMessages = new Map();
 async function sendWebhook(webhookUrl, payload, context) {
   try {
     await axios.post(webhookUrl, payload);
-    webhook('success', context);
+    webhook("success", context);
     return true;
   } catch (err) {
-    webhook('error', context);
+    webhook("error", err);
     return false;
   }
 }
@@ -44,7 +52,7 @@ async function processChatMessage(chatMessage, botName) {
   const content = formatChatDetectedMessage(chatMessage, botName);
   const payload = { content };
 
-  await sendWebhook(BOT_CHAT_WEBHOOK_URL, payload, 'chat + no response');
+  await sendWebhook(BOT_CHAT_WEBHOOK_URL, payload, "chat + no response");
 }
 
 /**
@@ -54,10 +62,14 @@ async function processChatMessage(chatMessage, botName) {
  * @param {string} botName - The bot name
  */
 async function processBotResponse(responseMessage, chatMessage, botName) {
-  const content = formatBotResponseMessage(chatMessage, responseMessage, botName);
+  const content = formatBotResponseMessage(
+    chatMessage,
+    responseMessage,
+    botName
+  );
   const payload = { content };
 
-  await sendWebhook(BOT_CHAT_WEBHOOK_URL, payload, 'chat + response');
+  await sendWebhook(BOT_CHAT_WEBHOOK_URL, payload, "chat + response");
 }
 
 /**
@@ -69,7 +81,11 @@ async function processBotResponse(responseMessage, chatMessage, botName) {
  */
 async function processLevelUp(skill, level, botName, botWebhookUrl) {
   const levelUpMessage = formatLevelUpMessage(skill, level);
-  await sendWebhook(botWebhookUrl, { content: levelUpMessage }, `level up: ${skill} → ${level}`);
+  await sendWebhook(
+    botWebhookUrl,
+    { content: levelUpMessage },
+    `level up: ${skill} → ${level}`
+  );
 }
 
 /**
@@ -80,7 +96,11 @@ async function processLevelUp(skill, level, botName, botWebhookUrl) {
  */
 async function processQuestCompletion(quest, botName, botWebhookUrl) {
   const questMessage = formatQuestCompleteMessage(quest, botName);
-  await sendWebhook(botWebhookUrl, { content: questMessage }, `quest: ${quest}`);
+  await sendWebhook(
+    botWebhookUrl,
+    { content: questMessage },
+    `quest: ${quest}`
+  );
 }
 
 /**
@@ -91,7 +111,11 @@ async function processQuestCompletion(quest, botName, botWebhookUrl) {
  */
 async function processBreakStart(breakLength, botName, botWebhookUrl) {
   const breakMessage = formatBreakStartMessage(breakLength, botName);
-  await sendWebhook(botWebhookUrl, { content: breakMessage }, `break start: ${breakLength}ms`);
+  await sendWebhook(
+    botWebhookUrl,
+    { content: breakMessage },
+    `break start: ${breakLength}ms`
+  );
 }
 
 /**
@@ -101,7 +125,7 @@ async function processBreakStart(breakLength, botName, botWebhookUrl) {
  */
 async function processBreakOver(botName, botWebhookUrl) {
   const breakOverMessage = formatBreakOverMessage(botName);
-  await sendWebhook(botWebhookUrl, { content: breakOverMessage }, 'break over');
+  await sendWebhook(botWebhookUrl, { content: breakOverMessage }, "break over");
 }
 
 /**
@@ -111,7 +135,7 @@ async function processBreakOver(botName, botWebhookUrl) {
  */
 async function processDeath(botName, botWebhookUrl) {
   const deathMessage = formatDeathMessage(botName);
-  await sendWebhook(botWebhookUrl, { content: deathMessage }, 'death');
+  await sendWebhook(botWebhookUrl, { content: deathMessage }, "death");
 }
 
 /**
@@ -121,9 +145,18 @@ async function processDeath(botName, botWebhookUrl) {
  * @param {string} botName - The bot name
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
-async function processValuableDrop(itemName, coinValue, botName, botWebhookUrl) {
+async function processValuableDrop(
+  itemName,
+  coinValue,
+  botName,
+  botWebhookUrl
+) {
   const dropMessage = formatValuableDropMessage(itemName, coinValue, botName);
-  await sendWebhook(botWebhookUrl, { content: dropMessage }, `valuable drop: ${itemName} (${coinValue} coins)`);
+  await sendWebhook(
+    botWebhookUrl,
+    { content: dropMessage },
+    `valuable drop: ${itemName} (${coinValue} coins)`
+  );
 }
 
 /**
@@ -148,7 +181,8 @@ async function processLogLine(line, filePath, botName, botWebhookUrl) {
   const responseMatch = line.match(LOG_PATTERNS.RESPONSE);
   if (responseMatch) {
     const responseMessage = responseMatch[1].trim();
-    const chatMessage = lastChatMessages.get(filePath) || "(No chat message found)";
+    const chatMessage =
+      lastChatMessages.get(filePath) || "(No chat message found)";
     await processBotResponse(responseMessage, chatMessage, botName);
     return;
   }
@@ -228,8 +262,7 @@ export async function processLogFile(filePath, fileOffsets) {
 
     fileOffsets.set(filePath, currentSize);
   } catch (err) {
-    error(`Error processing log file ${filePath}: ${err.message}`, 'Monitor');
+    error(`Error processing log file ${filePath}: ${err.message}`, "Monitor");
     throw err; // Re-throw to let caller handle it
   }
 }
-
