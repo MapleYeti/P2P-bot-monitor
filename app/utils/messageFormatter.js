@@ -87,6 +87,17 @@ export function formatBreakStartMessage(breakLength, botName) {
 }
 
 /**
+ * Format break over message
+ * @param {string} botName - The bot name
+ * @returns {string} - Formatted message
+ */
+export function formatBreakOverMessage(botName) {
+    return formatMessage(MESSAGE_FORMATS.BREAK_OVER, {
+        bot: botName
+    });
+}
+
+/**
  * Sanitize message content for Discord
  * @param {string} content - Raw message content
  * @returns {string} - Sanitized content

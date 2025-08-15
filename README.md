@@ -114,6 +114,11 @@ The application will:
 - **📤 Action**: Sends notification to bot-specific webhook with human-readable duration
 - **💡 Example**: `[SCRIPT] Break length 12860461` → "💤 **Bot Break Started!**\n**Bot:** MyBot\n**Break Duration:** 3 hours 34 minutes 20 seconds"
 
+### ✅ Break Finished
+- **🔍 Pattern**: `[SCRIPT] Break over`
+- **📤 Action**: Sends notification to bot-specific webhook when break ends
+- **💡 Example**: `[SCRIPT] Break over` → "✅ **Bot Break Finished!**\n**Bot:** MyBot\n**Status:** Back to work!"
+
 ## 🛠️ Development
 
 ### 🔧 Adding New Log Patterns
