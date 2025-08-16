@@ -19,32 +19,48 @@
         <main class="main-content">
             <!-- Configuration Section -->
             <section class="config-section">
-                <h2>⚙️ Configuration</h2>
-                <div class="config-form">
-                    <div class="form-group">
-                        <label for="logsDir">DreamBot Logs Directory:</label>
-                        <div class="input-group">
-                            <input type="text" id="logsDir" placeholder="C:\Users\username\DreamBot\Logs" readonly>
-                            <button type="button" id="selectDirBtn" class="btn btn-secondary">Browse</button>
+                <div class="accordion-header" id="configAccordionHeader">
+                    <div class="accordion-title">
+                        <h2>⚙️ Configuration</h2>
+                        <div class="config-status" id="configStatus">
+                            <span class="status-icon" id="configStatusIcon">❓</span>
+                            <span class="status-text" id="configStatusText">Checking...</span>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="chatWebhook">General Chat Webhook URL:</label>
-                        <input type="text" id="chatWebhook" placeholder="https://discord.com/api/webhooks/...">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Bot-Specific Webhooks:</label>
-                        <div id="botWebhooks" class="bot-webhooks">
-                            <!-- Bot webhooks will be added here dynamically -->
+                    <button class="accordion-toggle" id="configAccordionToggle">
+                        <span class="toggle-icon">▼</span>
+                    </button>
+                </div>
+                <div class="accordion-content" id="configAccordionContent">
+                    <div class="config-form">
+                        <div class="form-group">
+                            <label for="logsDir">DreamBot Logs Directory:</label>
+                            <div class="input-group">
+                                <input type="text" id="logsDir" placeholder="C:\Users\username\DreamBot\Logs" readonly>
+                                <button type="button" id="selectDirBtn" class="btn btn-secondary">Browse</button>
+                            </div>
                         </div>
-                        <button type="button" id="addBotBtn" class="btn btn-secondary">+ Add Bot</button>
-                    </div>
 
-                    <div class="form-actions">
-                        <button type="button" id="saveConfigBtn" class="btn btn-primary">Save Configuration</button>
-                        <button type="button" id="loadConfigBtn" class="btn btn-secondary">Load Configuration</button>
+                        <div class="form-group">
+                            <label for="chatWebhook">General Chat Webhook URL:</label>
+                            <input type="text" id="chatWebhook" placeholder="https://discord.com/api/webhooks/...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Bot-Specific Webhooks:</label>
+                            <div id="botWebhooks" class="bot-webhooks">
+                                <!-- Bot webhooks will be added here dynamically -->
+                            </div>
+                            <button type="button" id="addBotBtn" class="btn btn-secondary">+ Add Bot</button>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" id="saveConfigBtn" class="btn btn-primary">Save Configuration</button>
+                            <button type="button" id="loadConfigBtn" class="btn btn-secondary">Import Configuration</button>
+                            <div class="form-help">
+                                <small>💡 Import Configuration: Select a JSON file to import and overwrite current settings</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -79,7 +95,7 @@
         <div class="modal-content">
             <h3>Add Bot Webhook</h3>
             <div class="form-group">
-                <label for="botName">Bot Name:</label>
+                <label for="botName">Bot Name (DreamBot Log Folder):</label>
                 <input type="text" id="botName" placeholder="MyBot">
             </div>
             <div class="form-group">
