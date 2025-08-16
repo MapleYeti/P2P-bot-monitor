@@ -31,11 +31,21 @@ const lastChatMessages = new Map();
  * @returns {Promise<boolean>} - Success status
  */
 async function sendWebhook(webhookUrl, payload, context) {
+  console.log(`🚀 Sending webhook to: ${webhookUrl}`);
+  console.log(`📦 Payload:`, payload);
+  console.log(`🏷️ Context: ${context}`);
+
   try {
-    await axios.post(webhookUrl, payload);
+    const response = await axios.post(webhookUrl, payload);
+    console.log(`✅ Webhook sent successfully. Status: ${response.status}`);
     webhook("success", context);
     return true;
   } catch (err) {
+    console.error(`❌ Webhook failed:`, err.message);
+    if (err.response) {
+      console.error(`📊 Response status: ${err.response.status}`);
+      console.error(`📄 Response data:`, err.response.data);
+    }
     webhook("error", err);
     return false;
   }
@@ -83,6 +93,13 @@ async function processBotResponse(
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processLevelUp(skill, level, botName, botWebhookUrl) {
+  if (!botWebhookUrl) {
+    console.warn(
+      `No webhook configured for bot: ${botName}. Skipping level up notification.`
+    );
+    return;
+  }
+
   const levelUpMessage = formatLevelUpMessage(skill, level);
   await sendWebhook(
     botWebhookUrl,
@@ -98,6 +115,13 @@ async function processLevelUp(skill, level, botName, botWebhookUrl) {
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processQuestCompletion(quest, botName, botWebhookUrl) {
+  if (!botWebhookUrl) {
+    console.warn(
+      `No webhook configured for bot: ${botName}. Skipping quest completion notification.`
+    );
+    return;
+  }
+
   const questMessage = formatQuestCompleteMessage(quest, botName);
   await sendWebhook(
     botWebhookUrl,
@@ -111,14 +135,50 @@ async function processQuestCompletion(quest, botName, botWebhookUrl) {
  * @param {string} breakLength - Break length in milliseconds
  * @param {string} botName - The bot name
  * @param {string} botWebhookUrl - The bot's specific webhook URL
+ * @param {Function} emitLogEvent - Function to emit log events to renderer
  */
-async function processBreakStart(breakLength, botName, botWebhookUrl) {
+async function processBreakStart(
+  breakLength,
+  botName,
+  botWebhookUrl,
+  emitLogEvent
+) {
+  if (!botWebhookUrl) {
+    console.warn(
+      `No webhook configured for bot: ${botName}. Skipping break start notification.`
+    );
+    // Still emit to log display even if webhook fails
+    if (emitLogEvent) {
+      emitLogEvent({
+        type: "break-start",
+        botName,
+        breakLength,
+        timestamp: new Date().toISOString(),
+        message: `💤 Bot break started for ${botName} (${breakLength}ms)`,
+        level: "warning",
+      });
+    }
+    return;
+  }
+
   const breakMessage = formatBreakStartMessage(breakLength, botName);
   await sendWebhook(
     botWebhookUrl,
     { content: breakMessage },
     `break start: ${breakLength}ms`
   );
+
+  // Emit to log display
+  if (emitLogEvent) {
+    emitLogEvent({
+      type: "break-start",
+      botName,
+      breakLength,
+      timestamp: new Date().toISOString(),
+      message: `💤 Bot break started for ${botName} (${breakLength}ms)`,
+      level: "success",
+    });
+  }
 }
 
 /**
@@ -127,6 +187,13 @@ async function processBreakStart(breakLength, botName, botWebhookUrl) {
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processBreakOver(botName, botWebhookUrl) {
+  if (!botWebhookUrl) {
+    console.warn(
+      `No webhook configured for bot: ${botName}. Skipping break over notification.`
+    );
+    return;
+  }
+
   const breakOverMessage = formatBreakOverMessage(botName);
   await sendWebhook(botWebhookUrl, { content: breakOverMessage }, "break over");
 }
@@ -137,6 +204,13 @@ async function processBreakOver(botName, botWebhookUrl) {
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processDeath(botName, botWebhookUrl) {
+  if (!botWebhookUrl) {
+    console.warn(
+      `No webhook configured for bot: ${botName}. Skipping death notification.`
+    );
+    return;
+  }
+
   const deathMessage = formatDeathMessage(botName);
   await sendWebhook(botWebhookUrl, { content: deathMessage }, "death");
 }
@@ -154,6 +228,13 @@ async function processValuableDrop(
   botName,
   botWebhookUrl
 ) {
+  if (!botWebhookUrl) {
+    console.warn(
+      `No webhook configured for bot: ${botName}. Skipping valuable drop notification.`
+    );
+    return;
+  }
+
   const dropMessage = formatValuableDropMessage(itemName, coinValue, botName);
   await sendWebhook(
     botWebhookUrl,
@@ -170,9 +251,18 @@ async function processValuableDrop(
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
 async function processLogLine(line, filePath, botName, botWebhookUrl, config) {
+  console.log(
+    `🔍 Checking patterns for line: "${line.substring(0, 80)}${
+      line.length > 80 ? "..." : ""
+    }"`
+  );
+  console.log(`🔍 Full line: "${line}"`);
+  console.log(`🔍 Break pattern: ${LOG_PATTERNS.BREAK}`);
+
   // Check for chat message
   const chatMatch = line.match(LOG_PATTERNS.CHAT);
   if (chatMatch) {
+    console.log(`💬 Chat message detected: ${chatMatch[1].trim()}`);
     const chatMessage = chatMatch[1].trim();
     lastChatMessages.set(filePath, chatMessage);
     chat(chatMessage, botName);
@@ -210,8 +300,17 @@ async function processLogLine(line, filePath, botName, botWebhookUrl, config) {
   const breakMatch = line.match(LOG_PATTERNS.BREAK);
   if (breakMatch) {
     const breakLength = breakMatch[1];
+    console.log(
+      `Break length detected: ${breakLength}ms for bot: ${botName}, webhook: ${
+        botWebhookUrl ? "configured" : "not configured"
+      }`
+    );
     await processBreakStart(breakLength, botName, botWebhookUrl);
     return;
+  } else {
+    console.log(
+      `❌ Break pattern not matched. Pattern: ${LOG_PATTERNS.BREAK}, Line: "${line}"`
+    );
   }
 
   // Check for break over
@@ -250,6 +349,16 @@ export async function processLogFile(filePath, fileOffsets, config) {
 
     if (currentSize <= previousSize) return;
 
+    console.log(`🔍 Processing log file: ${filePath}`);
+    console.log(`📊 File size: ${previousSize} → ${currentSize} bytes`);
+    console.log(
+      `📁 Bot name extracted: ${path.basename(path.dirname(filePath))}`
+    );
+    console.log(
+      `⚙️ Config webhooks:`,
+      Object.keys(config.BOT_NAMES_WITH_DISCORD_WEBHOOKS || {})
+    );
+
     const stream = fs.createReadStream(filePath, {
       start: previousSize,
       end: currentSize,
@@ -259,10 +368,22 @@ export async function processLogFile(filePath, fileOffsets, config) {
     const botName = path.basename(path.dirname(filePath));
     const botWebhookUrl = getBotWebhookUrl(botName, config);
 
+    console.log(
+      `🔗 Bot webhook URL: ${botWebhookUrl ? "Configured" : "Not configured"}`
+    );
+
+    let lineCount = 0;
     for await (const line of rl) {
+      lineCount++;
+      console.log(
+        `📝 Processing line ${lineCount}: ${line.substring(0, 100)}${
+          line.length > 100 ? "..." : ""
+        }`
+      );
       await processLogLine(line, filePath, botName, botWebhookUrl, config);
     }
 
+    console.log(`✅ Processed ${lineCount} lines from ${filePath}`);
     fileOffsets.set(filePath, currentSize);
   } catch (err) {
     error(`Error processing log file ${filePath}: ${err.message}`, "Monitor");
