@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Bot launching
   launchCLI: (command) => ipcRenderer.invoke("launch-cli", command),
+  checkProcessStatus: (pid) => ipcRenderer.invoke("check-process-status", pid),
+  getTrackedProcesses: () => ipcRenderer.invoke("get-tracked-processes"),
+  debugTrackedProcesses: () => ipcRenderer.invoke("debug-tracked-processes"),
 
   // Monitoring control
   startMonitoring: (config) => ipcRenderer.invoke("start-monitoring", config),
@@ -26,6 +29,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onLogEvent: (callback) => ipcRenderer.on("log-event", callback),
   onMonitoringStatus: (callback) =>
     ipcRenderer.on("monitoring-status", callback),
+  onProcessExited: (callback) => ipcRenderer.on("process-exited", callback),
 
   // Remove listeners
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
