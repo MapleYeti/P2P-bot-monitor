@@ -1,6 +1,7 @@
 import fs from "fs";
 import chokidar from "chokidar";
 import { processLogFile } from "./processing/logProcessor.js";
+import { setGlobalConfig } from "./globalConfigManager.js";
 import path from "path";
 
 class LogMonitor {
@@ -24,6 +25,9 @@ class LogMonitor {
 
       // Store config for use in log processing
       this.currentConfig = config;
+
+      // Set global config for log processor
+      setGlobalConfig(config);
 
       // Initialize file offsets for existing log files
       const existingFiles = fs.readdirSync(config.BASE_LOG_DIR);
@@ -84,11 +88,7 @@ class LogMonitor {
         try {
           if (fs.statSync(filePath).isFile() && filePath.endsWith(".log")) {
             // Process the log file using our processLogFile function
-            await processLogFile(
-              filePath,
-              this.fileOffsets,
-              this.currentConfig
-            );
+            await processLogFile(filePath, this.fileOffsets);
 
             // Send log event to renderer
             this.windowManager.sendToRenderer("log-event", {
@@ -139,6 +139,16 @@ class LogMonitor {
 
   getCurrentConfig() {
     return this.currentConfig;
+  }
+
+  /**
+   * Update the current configuration and sync with log processor
+   * @param {Object} newConfig - New configuration object
+   */
+  updateConfig(newConfig) {
+    this.currentConfig = newConfig;
+    setGlobalConfig(newConfig);
+    console.log("🔧 Log monitor configuration updated");
   }
 }
 

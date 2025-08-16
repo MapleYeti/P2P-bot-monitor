@@ -1,10 +1,10 @@
-import { ipcMain, dialog } from 'electron';
-import path from 'path';
+import { ipcMain, dialog } from "electron";
+import path from "path";
 
 class IPCHandlers {
-  constructor(windowManager, configManager, logMonitor) {
+  constructor(windowManager, configFileManager, logMonitor) {
     this.windowManager = windowManager;
-    this.configManager = configManager;
+    this.configManager = configFileManager; // Keep the property name for compatibility
     this.logMonitor = logMonitor;
     this.setupHandlers();
   }

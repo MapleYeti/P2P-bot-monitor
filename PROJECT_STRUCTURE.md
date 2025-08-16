@@ -12,7 +12,7 @@ P2P-bot-monitor/
 │   ├── main/                           # Main process (Electron)
 │   │   ├── core/                       # Core application modules
 │   │   │   ├── windowManager.js        # Browser window management
-│   │   │   ├── configManager.js        # Configuration file operations
+│   │   │   ├── globalConfigManager.js  # Global configuration management
 │   │   │   └── logMonitor.js          # Log file monitoring
 │   │   ├── ipc/                        # Inter-process communication
 │   │   │   └── ipcHandlers.js         # IPC handlers for renderer communication
@@ -35,10 +35,10 @@ P2P-bot-monitor/
 │   ├── main/                           # Main process (Electron)
 │   ├── core/                       # Core application modules
 │   │   ├── windowManager.js        # Browser window management
-│   │   ├── configManager.js        # Configuration file operations
+│   │   ├── configManager.js        # Global configuration management
+│   │   ├── configFileManager.js    # Configuration file operations
 │   │   ├── logMonitor.js          # Log file monitoring
 │   │   ├── constants.js            # Application constants
-│   │   ├── configValidator.js      # Configuration validation
 │   │   ├── logging/                # Logging and webhook management
 │   │   │   ├── logger.js           # Logging utilities
 │   │   │   └── webhookManager.js   # Webhook management
@@ -86,10 +86,10 @@ P2P-bot-monitor/
 #### Core Modules (`src/main/core/`)
 
 - **`windowManager.js`** - Handles Electron BrowserWindow creation, lifecycle, and events
-- **`configManager.js`** - Manages configuration file operations (load, save, import)
+- **`globalConfigManager.js`** - Global configuration management and access
+- **`configFileManager.js`** - Configuration file operations (load, save, import)
 - **`logMonitor.js`** - Handles log file watching and processing using chokidar
 - **`constants.js`** - Application constants and configuration
-- **`configValidator.js`** - Configuration validation and defaults
 
 #### Logging & Processing (`src/main/core/logging/` & `src/main/core/processing/`)
 
@@ -127,7 +127,9 @@ P2P-bot-monitor/
 
 Utility functions have been reorganized and integrated into the main process modules:
 
-- **Configuration utilities** → `src/main/core/configValidator.js`
+- **Global configuration management** → `src/main/core/globalConfigManager.js`
+- **File-based configuration** → `src/main/core/configFileManager.js`
+- **Configuration validation** → `src/main/core/configFileManager.js` (integrated)
 - **Logging utilities** → `src/main/core/logging/logger.js`
 - **Webhook utilities** → `src/main/core/logging/webhookManager.js`
 - **Message formatting** → `src/main/core/processing/messageFormatter.js`
@@ -169,7 +171,7 @@ Utility functions have been reorganized and integrated into the main process mod
 ```javascript
 // From main.js
 import WindowManager from "./core/windowManager.js";
-import ConfigManager from "./core/configManager.js";
+import GlobalConfigManager from "./core/globalConfigManager.js";
 import LogMonitor from "./core/logMonitor.js";
 import IPCHandlers from "./ipc/ipcHandlers.js";
 ```

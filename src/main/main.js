@@ -1,22 +1,22 @@
 // Main process entry point
 import { app, BrowserWindow } from "electron";
 import WindowManager from "./core/windowManager.js";
-import ConfigManager from "./core/configManager.js";
+import ConfigFileManager from "./core/configFileManager.js";
 import LogMonitor from "./core/logMonitor.js";
 import IPCHandlers from "./ipc/ipcHandlers.js";
 
 // Initialize managers
 let windowManager;
-let configManager;
+let configFileManager;
 let logMonitor;
 let ipcHandlers;
 
 function createWindow() {
   // Create instances of all managers
   windowManager = new WindowManager();
-  configManager = new ConfigManager();
+  configFileManager = new ConfigFileManager();
   logMonitor = new LogMonitor(windowManager);
-  ipcHandlers = new IPCHandlers(windowManager, configManager, logMonitor);
+  ipcHandlers = new IPCHandlers(windowManager, configFileManager, logMonitor);
 
   // Create the main window
   windowManager.createMainWindow();

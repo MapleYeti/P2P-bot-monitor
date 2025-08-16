@@ -4,7 +4,6 @@ import readline from "readline";
 import axios from "axios";
 
 import { getBotWebhookUrl } from "../logging/webhookManager.js";
-
 import { chat, webhook, error } from "../logging/logger.js";
 import {
   formatChatDetectedMessage,
@@ -17,8 +16,7 @@ import {
   formatValuableDropMessage,
 } from "./messageFormatter.js";
 import { LOG_PATTERNS } from "../constants.js";
-
-// Constants - will be passed as parameters
+import { getGlobalConfig } from "../globalConfigManager.js";
 
 // Store last chat message per file
 const lastChatMessages = new Map();
@@ -56,11 +54,15 @@ async function sendWebhook(webhookUrl, payload, context) {
  * @param {string} chatMessage - The chat message
  * @param {string} botName - The bot name
  */
-async function processChatMessage(chatMessage, botName, config) {
+async function processChatMessage(chatMessage, botName) {
   const content = formatChatDetectedMessage(chatMessage, botName);
   const payload = { content };
 
-  await sendWebhook(config.BOT_CHAT_WEBHOOK_URL, payload, "chat + no response");
+  await sendWebhook(
+    getGlobalConfig().BOT_CHAT_WEBHOOK_URL,
+    payload,
+    "chat + no response"
+  );
 }
 
 /**
@@ -69,12 +71,7 @@ async function processChatMessage(chatMessage, botName, config) {
  * @param {string} chatMessage - The original chat message
  * @param {string} botName - The bot name
  */
-async function processBotResponse(
-  responseMessage,
-  chatMessage,
-  botName,
-  config
-) {
+async function processBotResponse(responseMessage, chatMessage, botName) {
   const content = formatBotResponseMessage(
     chatMessage,
     responseMessage,
@@ -82,7 +79,11 @@ async function processBotResponse(
   );
   const payload = { content };
 
-  await sendWebhook(config.BOT_CHAT_WEBHOOK_URL, payload, "chat + response");
+  await sendWebhook(
+    getGlobalConfig().BOT_CHAT_WEBHOOK_URL,
+    payload,
+    "chat + response"
+  );
 }
 
 /**
@@ -100,7 +101,7 @@ async function processLevelUp(skill, level, botName, botWebhookUrl) {
     return;
   }
 
-  const levelUpMessage = formatLevelUpMessage(skill, level);
+  const levelUpMessage = formatLevelUpMessage(skill, level, botName);
   await sendWebhook(
     botWebhookUrl,
     { content: levelUpMessage },
@@ -250,7 +251,7 @@ async function processValuableDrop(
  * @param {string} botName - The bot name
  * @param {string} botWebhookUrl - The bot's specific webhook URL
  */
-async function processLogLine(line, filePath, botName, botWebhookUrl, config) {
+async function processLogLine(line, filePath, botName, botWebhookUrl) {
   console.log(
     `🔍 Checking patterns for line: "${line.substring(0, 80)}${
       line.length > 80 ? "..." : ""
@@ -266,7 +267,7 @@ async function processLogLine(line, filePath, botName, botWebhookUrl, config) {
     const chatMessage = chatMatch[1].trim();
     lastChatMessages.set(filePath, chatMessage);
     chat(chatMessage, botName);
-    await processChatMessage(chatMessage, botName, config);
+    await processChatMessage(chatMessage, botName);
     return;
   }
 
@@ -276,7 +277,7 @@ async function processLogLine(line, filePath, botName, botWebhookUrl, config) {
     const responseMessage = responseMatch[1].trim();
     const chatMessage =
       lastChatMessages.get(filePath) || "(No chat message found)";
-    await processBotResponse(responseMessage, chatMessage, botName, config);
+    await processBotResponse(responseMessage, chatMessage, botName);
     return;
   }
 
@@ -342,7 +343,7 @@ async function processLogLine(line, filePath, botName, botWebhookUrl, config) {
  * @param {string} filePath - Path to the log file
  * @param {Map} fileOffsets - Map of file offsets for tracking changes
  */
-export async function processLogFile(filePath, fileOffsets, config) {
+export async function processLogFile(filePath, fileOffsets) {
   try {
     const previousSize = fileOffsets.get(filePath) || 0;
     const currentSize = fs.statSync(filePath).size;
@@ -356,7 +357,7 @@ export async function processLogFile(filePath, fileOffsets, config) {
     );
     console.log(
       `⚙️ Config webhooks:`,
-      Object.keys(config.BOT_NAMES_WITH_DISCORD_WEBHOOKS || {})
+      Object.keys(getGlobalConfig().BOT_NAMES_WITH_DISCORD_WEBHOOKS || {})
     );
 
     const stream = fs.createReadStream(filePath, {
@@ -366,7 +367,7 @@ export async function processLogFile(filePath, fileOffsets, config) {
 
     const rl = readline.createInterface({ input: stream });
     const botName = path.basename(path.dirname(filePath));
-    const botWebhookUrl = getBotWebhookUrl(botName, config);
+    const botWebhookUrl = getBotWebhookUrl(botName, getGlobalConfig());
 
     console.log(
       `🔗 Bot webhook URL: ${botWebhookUrl ? "Configured" : "Not configured"}`
@@ -380,7 +381,7 @@ export async function processLogFile(filePath, fileOffsets, config) {
           line.length > 100 ? "..." : ""
         }`
       );
-      await processLogLine(line, filePath, botName, botWebhookUrl, config);
+      await processLogLine(line, filePath, botName, botWebhookUrl);
     }
 
     console.log(`✅ Processed ${lineCount} lines from ${filePath}`);
