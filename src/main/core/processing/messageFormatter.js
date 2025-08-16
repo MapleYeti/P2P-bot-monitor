@@ -1,6 +1,6 @@
-import { MESSAGE_FORMATS } from "./constants.js";
-import { getSkillIcon } from "./skillUtils.js";
-import { getFormattedBreakDuration } from "./breakUtils.js";
+import { MESSAGE_FORMATS } from "../constants.js";
+import { getSkillIcon } from "./skillProcessor.js";
+import { getFormattedBreakDuration } from "./breakProcessor.js";
 
 /**
  * Format a message using a template and variables

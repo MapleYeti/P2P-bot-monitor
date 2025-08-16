@@ -3,9 +3,9 @@ import fs from "fs";
 import readline from "readline";
 import axios from "axios";
 
-import { getBotWebhookUrl } from "./webhookUtils.js";
+import { getBotWebhookUrl } from "../logging/webhookManager.js";
 
-import { chat, webhook, error } from "./logger.js";
+import { chat, webhook, error } from "../logging/logger.js";
 import {
   formatChatDetectedMessage,
   formatBotResponseMessage,
@@ -16,7 +16,7 @@ import {
   formatDeathMessage,
   formatValuableDropMessage,
 } from "./messageFormatter.js";
-import { LOG_PATTERNS } from "./constants.js";
+import { LOG_PATTERNS } from "../constants.js";
 
 // Constants - will be passed as parameters
 
