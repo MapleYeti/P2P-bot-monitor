@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Directory selection
   selectDirectory: () => ipcRenderer.invoke("select-directory"),
 
+  // Bot launching
+  launchCLI: (command) => ipcRenderer.invoke("launch-cli", command),
+
   // Monitoring control
   startMonitoring: (config) => ipcRenderer.invoke("start-monitoring", config),
   stopMonitoring: () => ipcRenderer.invoke("stop-monitoring"),

@@ -192,6 +192,7 @@ class ConfigUI {
         this.uiManager.setConfig(config);
         this.updateBotWebhooksDisplay();
         this.hideAddBotModal();
+
         this.uiManager.showSuccess("Bot webhook added successfully");
       } else {
         this.uiManager.showError(
@@ -213,6 +214,7 @@ class ConfigUI {
       if (result.success) {
         this.uiManager.setConfig(config);
         this.updateBotWebhooksDisplay();
+
         this.uiManager.showSuccess("Bot webhook removed successfully");
       } else {
         this.uiManager.showError(

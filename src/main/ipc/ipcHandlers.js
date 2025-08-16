@@ -1,4 +1,5 @@
 import { ipcMain, dialog, shell } from "electron";
+import { spawn } from "child_process";
 import path from "path";
 
 class IPCHandlers {
@@ -59,10 +60,20 @@ class IPCHandlers {
     // Launch CLI command
     ipcMain.handle("launch-cli", async (event, command) => {
       try {
-        // Use shell.openExternal to open a new terminal with the command
-        // This will open the default terminal application
-        await shell.openExternal(`cmd://${command}`);
-        return { success: true };
+        console.log(`Launching CLI command: ${command}`);
+
+        // Use child_process.spawn to execute the command in a new terminal
+        const child = spawn("cmd", ["/c", "start", "cmd", "/k", command], {
+          detached: true,
+          stdio: "ignore",
+          shell: true,
+        });
+
+        // Unreference the child process so it can run independently
+        child.unref();
+
+        console.log(`CLI command launched successfully with PID: ${child.pid}`);
+        return { success: true, pid: child.pid };
       } catch (error) {
         console.error("Failed to launch CLI:", error);
         return { success: false, error: error.message };

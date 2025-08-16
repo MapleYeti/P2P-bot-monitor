@@ -265,6 +265,106 @@ section h2 {
     display: flex;
     gap: 15px;
     justify-content: center;
+    margin-bottom: 25px;
+}
+
+/* Bot Status Section */
+.bot-status-section {
+    margin-top: 25px;
+}
+
+.bot-status-section h3 {
+    color: #2d3748;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.bot-status-table {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 15px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+    color: #2d3748;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bot-status-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.bot-status-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 15px;
+    padding: 15px 20px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+.bot-status-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.bot-status-row:last-child {
+    border-bottom: none;
+}
+
+.bot-name {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.bot-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator-bot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e53e3e;
+    transition: background 0.3s ease;
+}
+
+.status-indicator-bot.running {
+    background: #38a169;
+}
+
+.status-indicator-bot.stopped {
+    background: #e53e3e;
+}
+
+.status-indicator-bot.unknown {
+    background: #d69e2e;
+}
+
+.status-text-bot {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.bot-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.bot-actions .btn {
+    padding: 6px 12px;
+    font-size: 12px;
 }
 
 /* Buttons */
@@ -544,6 +644,22 @@ section h2 {
         margin: 10% auto;
         width: 95%;
         padding: 20px;
+    }
+    
+    /* Bot status table responsive */
+    .table-header,
+    .bot-status-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .bot-actions {
+        justify-content: center;
+    }
+    
+    .bot-status {
+        justify-content: center;
     }
 }
 

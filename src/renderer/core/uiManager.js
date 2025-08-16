@@ -15,6 +15,7 @@ class UIManager {
 
   setConfig(config) {
     this.currentConfig = { ...config };
+    this.emitConfigUpdated();
   }
 
   getConfig() {
@@ -23,6 +24,7 @@ class UIManager {
 
   updateConfigField(field, value) {
     this.currentConfig[field] = value;
+    this.emitConfigUpdated();
   }
 
   updateUI() {
@@ -69,9 +71,7 @@ class UIManager {
     const hasLogsDir =
       this.currentConfig.BASE_LOG_DIR &&
       this.currentConfig.BASE_LOG_DIR.trim() !== "";
-    const hasWebhooks =
-      Object.keys(this.currentConfig.BOT_CONFIG).length >
-      0;
+    const hasWebhooks = Object.keys(this.currentConfig.BOT_CONFIG).length > 0;
 
     if (hasLogsDir && hasWebhooks) {
       configStatusIcon.textContent = "✅";
@@ -135,6 +135,16 @@ class UIManager {
 
   showInfo(message) {
     this.showNotification(message, "info");
+  }
+
+  /**
+   * Emit configuration updated event
+   */
+  emitConfigUpdated() {
+    const event = new CustomEvent("configUpdated", {
+      detail: { config: this.currentConfig },
+    });
+    document.dispatchEvent(event);
   }
 }
 
