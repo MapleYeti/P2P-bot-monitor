@@ -1,1 +1,6 @@
-config.js
+.tmp
+node_modules
+builds
+packages
+bower_components
+config.json

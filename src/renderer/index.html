@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuneScape Bot Monitor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🤖 RuneScape Bot Monitor</h1>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">Stopped</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Configuration Section -->
+            <section class="config-section">
+                <h2>⚙️ Configuration</h2>
+                <div class="config-form">
+                    <div class="form-group">
+                        <label for="logsDir">DreamBot Logs Directory:</label>
+                        <div class="input-group">
+                            <input type="text" id="logsDir" placeholder="C:\Users\username\DreamBot\Logs" readonly>
+                            <button type="button" id="selectDirBtn" class="btn btn-secondary">Browse</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chatWebhook">General Chat Webhook URL:</label>
+                        <input type="text" id="chatWebhook" placeholder="https://discord.com/api/webhooks/...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bot-Specific Webhooks:</label>
+                        <div id="botWebhooks" class="bot-webhooks">
+                            <!-- Bot webhooks will be added here dynamically -->
+                        </div>
+                        <button type="button" id="addBotBtn" class="btn btn-secondary">+ Add Bot</button>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="saveConfigBtn" class="btn btn-primary">Save Configuration</button>
+                        <button type="button" id="loadConfigBtn" class="btn btn-secondary">Load Configuration</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Monitoring Control Section -->
+            <section class="control-section">
+                <h2>🎮 Monitoring Control</h2>
+                <div class="control-buttons">
+                    <button type="button" id="startBtn" class="btn btn-success">Start Monitoring</button>
+                    <button type="button" id="stopBtn" class="btn btn-danger" disabled>Stop Monitoring</button>
+                </div>
+            </section>
+
+            <!-- Log Display Section -->
+            <section class="logs-section">
+                <h2>📋 Live Logs</h2>
+                <div class="logs-container">
+                    <div class="logs-header">
+                        <span>Recent Activity</span>
+                        <button type="button" id="clearLogsBtn" class="btn btn-small">Clear</button>
+                    </div>
+                    <div id="logsDisplay" class="logs-display">
+                        <div class="no-logs">No logs yet. Start monitoring to see activity.</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Bot Webhook Modal -->
+    <div id="botModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Bot Webhook</h3>
+            <div class="form-group">
+                <label for="botName">Bot Name:</label>
+                <input type="text" id="botName" placeholder="MyBot">
+            </div>
+            <div class="form-group">
+                <label for="botWebhook">Discord Webhook URL:</label>
+                <input type="text" id="botWebhook" placeholder="https://discord.com/api/webhooks/...">
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="saveBotBtn" class="btn btn-primary">Save</button>
+                <button type="button" id="cancelBotBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
