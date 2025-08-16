@@ -274,7 +274,7 @@ function hideAddBotModal() {
   botModal.style.display = "none";
 }
 
-function saveBotWebhook() {
+async function saveBotWebhook() {
   const name = botName.value.trim();
   const webhook = botWebhook.value.trim();
 
@@ -283,18 +283,164 @@ function saveBotWebhook() {
     return;
   }
 
-  currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[name] = webhook;
-  updateBotWebhooksDisplay();
-  hideAddBotModal();
+  try {
+    currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[name] = webhook;
 
-  addProgramLog(`🤖 Bot webhook added: ${name}`, "webhook", "success");
+    // Save configuration to disk
+    const result = await window.electronAPI.saveConfig(currentConfig);
+    if (result.success) {
+      updateBotWebhooksDisplay();
+      hideAddBotModal();
+      addProgramLog(`🤖 Bot webhook added: ${name}`, "webhook", "success");
+      showSuccess("Bot webhook added successfully");
+    } else {
+      showError("Failed to save configuration: " + result.error);
+      // Revert the changes
+      delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[name];
+      updateBotWebhooksDisplay();
+    }
+  } catch (error) {
+    showError("Failed to save bot webhook: " + error.message);
+    // Revert the changes
+    delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[name];
+    updateBotWebhooksDisplay();
+  }
 }
 
-function removeBotWebhook(botName) {
-  delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[botName];
-  updateBotWebhooksDisplay();
+async function removeBotWebhook(botName) {
+  try {
+    // Store the webhook URL before deletion for potential rollback
+    const webhookUrl = currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[botName];
+    delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[botName];
 
-  addProgramLog(`🗑️ Bot webhook removed: ${botName}`, "webhook", "info");
+    // Save configuration to disk
+    const result = await window.electronAPI.saveConfig(currentConfig);
+    if (result.success) {
+      updateBotWebhooksDisplay();
+      addProgramLog(`🗑️ Bot webhook removed: ${botName}`, "webhook", "info");
+      showSuccess("Bot webhook removed successfully");
+    } else {
+      showError("Failed to save configuration: " + result.error);
+      // Revert the changes
+      currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[botName] = webhookUrl;
+      updateBotWebhooksDisplay();
+    }
+  } catch (error) {
+    showError("Failed to remove bot webhook: " + error.message);
+    // Revert the changes
+    currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[botName] = webhookUrl;
+    updateBotWebhooksDisplay();
+  }
+}
+
+function editBotWebhook(botName) {
+  const item = event.target.closest(".bot-webhook-item");
+  const nameInput = item.querySelector(".bot-name-input");
+  const webhookInput = item.querySelector(".webhook-url-input");
+  const saveBtn = item.querySelector(".save-bot-btn");
+  const cancelBtn = item.querySelector(".cancel-bot-btn");
+  const editBtn = item.querySelector(".edit-bot-btn");
+
+  // Enable editing
+  nameInput.readOnly = false;
+  webhookInput.readOnly = false;
+  saveBtn.style.display = "inline-block";
+  cancelBtn.style.display = "inline-block";
+  editBtn.style.display = "none";
+
+  // Add editing visual state
+  item.classList.add("editing");
+
+  // Focus on the name input
+  nameInput.focus();
+
+  addProgramLog(`✏️ Editing webhook for bot: ${botName}`, "webhook", "info");
+}
+
+function cancelBotWebhookEdit(botName) {
+  const item = event.target.closest(".bot-webhook-item");
+  const nameInput = item.querySelector(".bot-name-input");
+  const webhookInput = item.querySelector(".webhook-url-input");
+  const saveBtn = item.querySelector(".save-bot-btn");
+  const cancelBtn = item.querySelector(".cancel-bot-btn");
+  const editBtn = item.querySelector(".edit-bot-btn");
+
+  // Restore original values
+  nameInput.value = botName;
+  webhookInput.value = currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[botName];
+
+  // Disable editing
+  nameInput.readOnly = true;
+  webhookInput.readOnly = true;
+  saveBtn.style.display = "none";
+  cancelBtn.style.display = "none";
+  editBtn.style.display = "inline-block";
+
+  // Remove editing visual state
+  item.classList.remove("editing");
+
+  addProgramLog(`❌ Editing cancelled for bot: ${botName}`, "webhook", "info");
+}
+
+async function saveBotWebhookChanges(originalBotName) {
+  const item = event.target.closest(".bot-webhook-item");
+  const nameInput = item.querySelector(".bot-name-input");
+  const webhookInput = item.querySelector(".webhook-url-input");
+  const saveBtn = item.querySelector(".save-bot-btn");
+  const cancelBtn = item.querySelector(".cancel-bot-btn");
+  const editBtn = item.querySelector(".edit-bot-btn");
+
+  const newBotName = nameInput.value.trim();
+  const newWebhook = webhookInput.value.trim();
+
+  if (!newBotName || !newWebhook) {
+    showError("Bot name and webhook URL are required");
+    return;
+  }
+
+  try {
+    // Remove the old entry and add the new one
+    delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[originalBotName];
+    currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[newBotName] = newWebhook;
+
+    // Save configuration to disk
+    const result = await window.electronAPI.saveConfig(currentConfig);
+    if (result.success) {
+      // Update the display
+      updateBotWebhooksDisplay();
+
+      // Disable editing
+      nameInput.readOnly = true;
+      webhookInput.readOnly = true;
+      saveBtn.style.display = "none";
+      cancelBtn.style.display = "none";
+      editBtn.style.display = "inline-block";
+
+      // Remove editing visual state
+      item.classList.remove("editing");
+
+      addProgramLog(
+        `💾 Bot webhook updated: ${originalBotName} → ${newBotName}`,
+        "webhook",
+        "success"
+      );
+      showSuccess("Bot webhook updated and saved successfully");
+    } else {
+      showError("Failed to save configuration: " + result.error);
+      // Revert the changes
+      delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[newBotName];
+      currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[originalBotName] =
+        webhookInput.value;
+      updateBotWebhooksDisplay();
+    }
+  } catch (error) {
+    showError("Failed to save bot webhook: " + error.message);
+    // Revert the changes
+    delete currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[newBotName];
+    currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS[originalBotName] =
+      webhookInput.value;
+    updateBotWebhooksDisplay();
+  }
 }
 
 function updateBotWebhooksDisplay() {
@@ -305,10 +451,25 @@ function updateBotWebhooksDisplay() {
       const item = document.createElement("div");
       item.className = "bot-webhook-item";
       item.innerHTML = `
-            <input type="text" value="${name}" placeholder="Bot Name" readonly>
-            <input type="text" value="${webhook}" placeholder="Webhook URL" readonly>
+            <input type="text" value="${name}" placeholder="Bot Name" class="bot-name-input" data-original-name="${name}">
+            <input type="text" value="${webhook}" placeholder="Webhook URL" class="webhook-url-input">
+            <button type="button" class="btn btn-small btn-primary save-bot-btn" onclick="saveBotWebhookChanges('${name}')">Save</button>
+            <button type="button" class="btn btn-small btn-warning cancel-bot-btn" onclick="cancelBotWebhookEdit('${name}')" style="display: none;">Cancel</button>
+            <button type="button" class="btn btn-small btn-secondary edit-bot-btn" onclick="editBotWebhook('${name}')">Edit</button>
             <button type="button" class="btn btn-small btn-danger" onclick="removeBotWebhook('${name}')">Remove</button>
         `;
+
+      // Add event listeners for the inputs
+      const nameInput = item.querySelector(".bot-name-input");
+      const webhookInput = item.querySelector(".webhook-url-input");
+      const saveBtn = item.querySelector(".save-bot-btn");
+      const editBtn = item.querySelector(".edit-bot-btn");
+
+      // Initially disable editing
+      nameInput.readOnly = true;
+      webhookInput.readOnly = true;
+      saveBtn.style.display = "none";
+
       botWebhooks.appendChild(item);
     }
   );

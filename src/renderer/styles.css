@@ -208,6 +208,15 @@ section h2 {
     background: #c53030;
 }
 
+.btn-warning {
+    background: #d69e2e;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #b7791f;
+}
+
 .btn-small {
     padding: 8px 16px;
     font-size: 14px;
@@ -220,9 +229,13 @@ section h2 {
 
 .bot-webhook-item {
     display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 12px;
     align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .bot-webhook-item input {
@@ -231,6 +244,50 @@ section h2 {
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.bot-webhook-item input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.bot-webhook-item input[readonly] {
+    background-color: #f7fafc;
+    color: #4a5568;
+    cursor: not-allowed;
+}
+
+.bot-webhook-item input:not([readonly]) {
+    background-color: white;
+    color: #2d3748;
+    cursor: text;
+    border-color: #667eea;
+}
+
+.bot-webhook-item.editing {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.bot-webhook-item.editing input {
+    border-color: #667eea;
+    background-color: white;
+}
+
+.bot-webhook-item .bot-name-input {
+    min-width: 120px;
+}
+
+.bot-webhook-item .webhook-url-input {
+    min-width: 200px;
+}
+
+.bot-webhook-item .btn {
+    white-space: nowrap;
+    min-width: 60px;
 }
 
 /* Logs Display */
