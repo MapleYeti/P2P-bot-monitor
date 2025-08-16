@@ -2,12 +2,14 @@ import UIManager from "./core/uiManager.js";
 import ConfigUI from "./core/configUI.js";
 import LogDisplay from "./core/logDisplay.js";
 import EventHandlers from "./core/eventHandlers.js";
+import BotStatusManager from "./core/botStatusManager.js";
 
 // Global references for onclick handlers
 let uiManager;
 let configUI;
 let logDisplay;
 let eventHandlers;
+let botStatusManager;
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", async () => {
@@ -44,12 +46,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     configUI = new ConfigUI(uiManager);
     logDisplay = new LogDisplay(uiManager);
     eventHandlers = new EventHandlers(uiManager, configUI, logDisplay);
+    botStatusManager = new BotStatusManager(uiManager);
 
     // Load configuration and setup UI
     await loadConfiguration();
 
     // Update UI
     uiManager.updateUI();
+    
+    // Initialize bot status display
+    botStatusManager.updateBotStatusList();
 
     console.log("Application initialization complete!");
 
@@ -103,6 +109,7 @@ function validateDOMElements() {
     "configAccordionContent",
     "configStatusIcon",
     "configStatusText",
+    "botStatusList",
   ];
 
   for (const id of requiredElements) {
