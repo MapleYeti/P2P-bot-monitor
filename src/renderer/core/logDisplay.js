@@ -16,10 +16,10 @@ class LogDisplay {
     switch (data.type) {
       case "log-entry":
         this.addLogEntry({
-          timestamp: data.entry.timestamp,
+          timestamp: data.timestamp,
           type: "log-entry",
-          content: `[${data.entry.file}] ${data.entry.content}`,
-          level: "info",
+          content: data.content,
+          level: data.level || "info",
         });
         break;
       case "file-added":
@@ -60,6 +60,7 @@ class LogDisplay {
     const levelIcon = this.getLevelIcon(entry.level);
     const typeLabel = this.getTypeLabel(entry.type);
 
+    console.log(entry);
     logElement.innerHTML = `
       <div class="log-header">
         <span class="timestamp">${timestamp}</span>

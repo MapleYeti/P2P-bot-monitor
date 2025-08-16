@@ -88,17 +88,20 @@ class LogMonitor {
         try {
           if (fs.statSync(filePath).isFile() && filePath.endsWith(".log")) {
             // Process the log file using our processLogFile function
-            await processLogFile(filePath, this.fileOffsets);
-
-            // Send log event to renderer
-            this.windowManager.sendToRenderer("log-event", {
-              type: "log-entry",
-              entry: {
-                timestamp: new Date().toISOString(),
-                file: path.basename(filePath),
-                content: "Log file processed",
-              },
+            await processLogFile(filePath, this.fileOffsets, (eventData) => {
+              // Send webhook events to the frontend log display
+              this.windowManager.sendToRenderer("log-event", eventData);
             });
+
+            // // Send log event to renderer
+            // this.windowManager.sendToRenderer("log-event", {
+            //   type: "log-entry",
+            //   entry: {
+            //     timestamp: new Date().toISOString(),
+            //     file: path.basename(filePath),
+            //     content: "Log file processed",
+            //   },
+            // });
           }
         } catch (err) {
           console.error("Error processing file change:", err);
