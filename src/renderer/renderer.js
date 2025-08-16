@@ -89,6 +89,7 @@ function validateDOMElements() {
     "addBotBtn",
     "saveConfigBtn",
     "loadConfigBtn",
+    "exportConfigBtn",
     "toggleMonitoringBtn",
     "clearLogsBtn",
     "logsDisplay",

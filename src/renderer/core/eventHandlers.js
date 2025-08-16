@@ -12,6 +12,7 @@ class EventHandlers {
     const addBotBtn = document.getElementById("addBotBtn");
     const saveConfigBtn = document.getElementById("saveConfigBtn");
     const loadConfigBtn = document.getElementById("loadConfigBtn");
+    const exportConfigBtn = document.getElementById("exportConfigBtn");
 
     // Monitoring buttons
     const toggleMonitoringBtn = document.getElementById("toggleMonitoringBtn");
@@ -27,6 +28,9 @@ class EventHandlers {
     addBotBtn?.addEventListener("click", () => this.configUI.showAddBotModal());
     saveConfigBtn?.addEventListener("click", () => this.saveConfiguration());
     loadConfigBtn?.addEventListener("click", () => this.importConfiguration());
+    exportConfigBtn?.addEventListener("click", () =>
+      this.exportConfiguration()
+    );
 
     toggleMonitoringBtn?.addEventListener("click", () =>
       this.toggleMonitoring()
@@ -222,6 +226,63 @@ class EventHandlers {
       );
       this.logDisplay.addProgramLog(
         `❌ Configuration import error: ${error.message}`,
+        "config",
+        "error"
+      );
+    }
+  }
+
+  async exportConfiguration() {
+    try {
+      if (!this.isElectronAPIAvailable()) {
+        this.uiManager.showError(
+          "Electron API not available. Please wait for the application to fully load."
+        );
+        return;
+      }
+
+      this.logDisplay.addProgramLog(
+        "📤 Exporting configuration file...",
+        "config",
+        "info"
+      );
+
+      const currentConfig = this.uiManager.getConfig();
+      const result = await window.electronAPI.exportConfig(currentConfig);
+
+      if (result.success) {
+        this.uiManager.showSuccess(
+          `Configuration exported successfully to: ${result.filePath}`
+        );
+        this.logDisplay.addProgramLog(
+          `✅ Configuration exported successfully to: ${result.filePath}`,
+          "config",
+          "success"
+        );
+      } else {
+        if (result.error === "Export cancelled") {
+          this.logDisplay.addProgramLog(
+            "ℹ️ Configuration export cancelled",
+            "config",
+            "info"
+          );
+        } else {
+          this.uiManager.showError(
+            "Failed to export configuration: " + result.error
+          );
+          this.logDisplay.addProgramLog(
+            `❌ Configuration export error: ${result.error}`,
+            "config",
+            "error"
+          );
+        }
+      }
+    } catch (error) {
+      this.uiManager.showError(
+        "Failed to export configuration: " + error.message
+      );
+      this.logDisplay.addProgramLog(
+        `❌ Configuration export error: ${error.message}`,
         "config",
         "error"
       );

@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from "electron";
+import { ipcMain, dialog, shell } from "electron";
 import path from "path";
 
 class IPCHandlers {
@@ -38,6 +38,11 @@ class IPCHandlers {
       return await this.configManager.importConfig(mainWindow);
     });
 
+    ipcMain.handle("export-config", async (event, config) => {
+      const mainWindow = this.windowManager.getMainWindow();
+      return await this.configManager.exportConfig(mainWindow, config);
+    });
+
     // Monitoring control
     ipcMain.handle("start-monitoring", async (event, config) => {
       return await this.logMonitor.startMonitoring(config);
@@ -50,6 +55,19 @@ class IPCHandlers {
     ipcMain.handle("get-monitoring-status", () => {
       return this.logMonitor.getMonitoringStatus();
     });
+
+    // Launch CLI command
+    ipcMain.handle("launch-cli", async (event, command) => {
+      try {
+        // Use shell.openExternal to open a new terminal with the command
+        // This will open the default terminal application
+        await shell.openExternal(`cmd://${command}`);
+        return { success: true };
+      } catch (error) {
+        console.error("Failed to launch CLI:", error);
+        return { success: false, error: error.message };
+      }
+    });
   }
 
   // Method to remove all handlers (useful for cleanup)
@@ -58,9 +76,11 @@ class IPCHandlers {
     ipcMain.removeHandler("load-config");
     ipcMain.removeHandler("save-config");
     ipcMain.removeHandler("import-config");
+    ipcMain.removeHandler("export-config");
     ipcMain.removeHandler("start-monitoring");
     ipcMain.removeHandler("stop-monitoring");
     ipcMain.removeHandler("get-monitoring-status");
+    ipcMain.removeHandler("launch-cli");
   }
 }
 

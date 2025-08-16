@@ -244,6 +244,13 @@ section h2 {
     align-items: flex-start;
 }
 
+.button-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 .form-help {
     margin-top: 8px;
     color: #718096;

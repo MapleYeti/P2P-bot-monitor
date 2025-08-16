@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   loadConfig: () => ipcRenderer.invoke("load-config"),
   saveConfig: (config) => ipcRenderer.invoke("save-config", config),
   importConfig: () => ipcRenderer.invoke("import-config"),
+  exportConfig: (config) => ipcRenderer.invoke("export-config", config),
 
   // Directory selection
   selectDirectory: () => ipcRenderer.invoke("select-directory"),
