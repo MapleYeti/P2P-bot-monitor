@@ -10,6 +10,9 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow;
 
+// Make mainWindow globally accessible for logger
+global.mainWindow = mainWindow;
+
 // Log monitoring state
 let logWatcher = null;
 let fileOffsets = new Map();
@@ -42,6 +45,9 @@ function createWindow() {
     icon: path.join(__dirname, "assets/icon.png"),
     title: "RuneScape Bot Monitor",
   });
+
+  // Update global reference
+  global.mainWindow = mainWindow;
 
   mainWindow.loadFile(path.join(__dirname, "..", "renderer", "index.html"));
 
@@ -79,6 +85,7 @@ function createWindow() {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+    global.mainWindow = null;
   });
 }
 

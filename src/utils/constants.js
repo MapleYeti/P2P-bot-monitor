@@ -15,8 +15,8 @@ export const LOG_PATTERNS = {
   RESPONSE: /\[INFO\] SLOWLY TYPING RESPONSE: (.+)/,
   LEVEL_UP: /you've just advanced your (.+?) level\. You are now level (\d+)/i,
   QUEST: /completed a quest: <col=.+?>(.+?)<\/col>/i,
-  BREAK: /\[SCRIPT\] Break length (\d+)/,
-  BREAK_OVER: /\[SCRIPT\] Break over/,
+  BREAK: /\[(?:SCRIPT|INFO)\] Break length (\d+)/,
+  BREAK_OVER: /\[(?:SCRIPT|INFO)\] Break over/,
   DEATH: /Oh dear, you are dead!/,
   VALUABLE_DROP:
     /\[INFO\] \[GAME\] <col=.+?>Valuable drop: (.+?) \((\d+(?:,\d+)*) coins\)<\/col>/,
