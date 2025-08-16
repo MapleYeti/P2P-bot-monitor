@@ -47,16 +47,15 @@ class UIManager {
   }
 
   updateButtonStates() {
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
+    const toggleBtn = document.getElementById("toggleMonitoringBtn");
 
-    if (startBtn && stopBtn) {
+    if (toggleBtn) {
       if (this.isMonitoring) {
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
+        toggleBtn.textContent = "Stop Monitoring";
+        toggleBtn.className = "btn btn-danger";
       } else {
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
+        toggleBtn.textContent = "Start Monitoring";
+        toggleBtn.className = "btn btn-success";
       }
     }
   }

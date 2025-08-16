@@ -14,8 +14,7 @@ class EventHandlers {
     const loadConfigBtn = document.getElementById("loadConfigBtn");
 
     // Monitoring buttons
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
+    const toggleMonitoringBtn = document.getElementById("toggleMonitoringBtn");
     const clearLogsBtn = document.getElementById("clearLogsBtn");
 
     // Modal buttons
@@ -29,8 +28,9 @@ class EventHandlers {
     saveConfigBtn?.addEventListener("click", () => this.saveConfiguration());
     loadConfigBtn?.addEventListener("click", () => this.importConfiguration());
 
-    startBtn?.addEventListener("click", () => this.startMonitoring());
-    stopBtn?.addEventListener("click", () => this.stopMonitoring());
+    toggleMonitoringBtn?.addEventListener("click", () =>
+      this.toggleMonitoring()
+    );
     clearLogsBtn?.addEventListener("click", () => this.logDisplay.clearLogs());
 
     // Modal events
@@ -70,6 +70,7 @@ class EventHandlers {
           this.uiManager.updateConfigField("BASE_LOG_DIR", selectedPath);
           this.uiManager.updateConfigurationStatus();
           this.uiManager.showSuccess("Directory selected successfully");
+
           this.logDisplay.addProgramLog(
             `✅ Directory selected: ${selectedPath}`,
             "config",
@@ -191,6 +192,7 @@ class EventHandlers {
         this.uiManager.showSuccess(
           "Configuration imported and loaded successfully"
         );
+
         this.logDisplay.addProgramLog(
           "✅ Configuration imported and loaded successfully",
           "config",
@@ -226,7 +228,7 @@ class EventHandlers {
     }
   }
 
-  async startMonitoring() {
+  async toggleMonitoring() {
     try {
       if (!this.isElectronAPIAvailable()) {
         this.uiManager.showError(
@@ -235,6 +237,25 @@ class EventHandlers {
         return;
       }
 
+      if (this.uiManager.isMonitoring) {
+        // Currently monitoring, so stop it
+        await this.stopMonitoring();
+      } else {
+        // Not monitoring, so start it
+        await this.startMonitoring();
+      }
+    } catch (error) {
+      this.uiManager.showError("Failed to toggle monitoring: " + error.message);
+      this.logDisplay.addProgramLog(
+        `❌ Toggle monitoring error: ${error.message}`,
+        "monitoring",
+        "error"
+      );
+    }
+  }
+
+  async startMonitoring() {
+    try {
       if (!this.uiManager.getConfig().BASE_LOG_DIR) {
         this.uiManager.showError(
           "Please configure the DreamBot Logs Directory first"

@@ -31,8 +31,8 @@ class ConfigUI {
         this.toggleAccordion();
       });
 
-      // Start with accordion expanded
-      this.expandAccordion();
+      // Start with accordion collapsed by default
+      this.collapseAccordion();
     }
   }
 
@@ -66,8 +66,7 @@ class ConfigUI {
     configAccordionContent.classList.add("expanded");
     const toggleIcon = configAccordionToggle.querySelector(".toggle-icon");
     if (toggleIcon) {
-      toggleIcon.textContent = "▼";
-      toggleIcon.style.transform = "rotate(0deg)";
+      toggleIcon.textContent = "▲";
     }
   }
 
@@ -84,8 +83,7 @@ class ConfigUI {
     configAccordionContent.classList.remove("expanded");
     const toggleIcon = configAccordionToggle.querySelector(".toggle-icon");
     if (toggleIcon) {
-      toggleIcon.textContent = "▶";
-      toggleIcon.style.transform = "rotate(-90deg)";
+      toggleIcon.textContent = "▼";
     }
   }
 
