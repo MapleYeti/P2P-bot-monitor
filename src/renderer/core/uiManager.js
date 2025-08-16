@@ -4,7 +4,7 @@ class UIManager {
     this.currentConfig = {
       BASE_LOG_DIR: "",
       BOT_CHAT_WEBHOOK_URL: "",
-      BOT_NAMES_WITH_DISCORD_WEBHOOKS: {},
+      BOT_CONFIG: {},
     };
   }
 
@@ -70,7 +70,7 @@ class UIManager {
       this.currentConfig.BASE_LOG_DIR &&
       this.currentConfig.BASE_LOG_DIR.trim() !== "";
     const hasWebhooks =
-      Object.keys(this.currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS).length >
+      Object.keys(this.currentConfig.BOT_CONFIG).length >
       0;
 
     if (hasLogsDir && hasWebhooks) {

@@ -429,7 +429,7 @@ export async function processLogFile(filePath, fileOffsets, emitLogEvent) {
     );
     console.log(
       `⚙️ Config webhooks:`,
-      Object.keys(getGlobalConfig().BOT_NAMES_WITH_DISCORD_WEBHOOKS || {})
+      Object.keys(getGlobalConfig().BOT_CONFIG || {})
     );
 
     const stream = fs.createReadStream(filePath, {

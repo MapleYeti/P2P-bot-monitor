@@ -116,7 +116,7 @@ The application uses a configuration file (`config.json`) to store:
 
 - **BASE_LOG_DIR**: Directory containing DreamBot log files
 - **BOT_CHAT_WEBHOOK_URL**: General Discord webhook for chat notifications
-- **BOT_NAMES_WITH_DISCORD_WEBHOOKS**: Bot-specific webhook configurations
+- **BOT_CONFIG**: Bot-specific configurations including webhooks and CLI commands
 
 ### Example Configuration
 
@@ -124,9 +124,15 @@ The application uses a configuration file (`config.json`) to store:
 {
   "BASE_LOG_DIR": "C:\\Users\\username\\DreamBot\\Logs",
   "BOT_CHAT_WEBHOOK_URL": "https://discord.com/api/webhooks/...",
-  "BOT_NAMES_WITH_DISCORD_WEBHOOKS": {
-    "MyBot1": "https://discord.com/api/webhooks/...",
-    "MyBot2": "https://discord.com/api/webhooks/..."
+  "BOT_CONFIG": {
+    "MyBot1": {
+      "webhookUrl": "https://discord.com/api/webhooks/...",
+      "launchCLI": ""
+    },
+    "MyBot2": {
+      "webhookUrl": "https://discord.com/api/webhooks/...",
+      "launchCLI": "java -jar DreamBot.jar -script MyScript -world 301"
+    }
   }
 }
 ```

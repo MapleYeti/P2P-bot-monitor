@@ -22,6 +22,13 @@ class FileConfigManager {
       if (fs.existsSync(this.configPath)) {
         const config = JSON.parse(fs.readFileSync(this.configPath, "utf8"));
 
+        // Convert old bot configuration format to new standardized format if needed
+        if (config.BOT_CONFIG) {
+          config.BOT_CONFIG = this.convertBotConfigToNewFormat(
+            config.BOT_CONFIG
+          );
+        }
+
         // Validate the loaded configuration
         const validation = this.validateConfig(config);
         if (!validation.success) {
@@ -84,12 +91,6 @@ class FileConfigManager {
       const fileContent = fs.readFileSync(filePath, "utf8");
       const config = JSON.parse(fileContent);
 
-      // Validate the config structure using our validation method
-      const validation = this.validateConfig(config);
-      if (!validation.success) {
-        return validation;
-      }
-
       // Ensure required fields exist with defaults if missing
       if (!config.BASE_LOG_DIR) {
         config.BASE_LOG_DIR = "";
@@ -97,8 +98,17 @@ class FileConfigManager {
       if (!config.BOT_CHAT_WEBHOOK_URL) {
         config.BOT_CHAT_WEBHOOK_URL = "";
       }
-      if (!config.BOT_NAMES_WITH_DISCORD_WEBHOOKS) {
-        config.BOT_NAMES_WITH_DISCORD_WEBHOOKS = {};
+      if (!config.BOT_CONFIG) {
+        config.BOT_CONFIG = {};
+      }
+
+      // Convert old bot configuration format to new standardized format
+      config.BOT_CONFIG = this.convertBotConfigToNewFormat(config.BOT_CONFIG);
+
+      // Validate the converted config structure
+      const validation = this.validateConfig(config);
+      if (!validation.success) {
+        return validation;
       }
 
       // Save the imported config to config.json (overwriting current)
@@ -139,7 +149,7 @@ class FileConfigManager {
       const defaultConfig = {
         BASE_LOG_DIR: "",
         BOT_CHAT_WEBHOOK_URL: "",
-        BOT_NAMES_WITH_DISCORD_WEBHOOKS: {},
+        BOT_CONFIG: {},
       };
 
       await this.saveConfig(defaultConfig);
@@ -165,28 +175,24 @@ class FileConfigManager {
       errors.push("BASE_LOG_DIR cannot be empty");
     }
 
-    if (!config.BOT_CHAT_WEBHOOK_URL) {
-      errors.push("BOT_CHAT_WEBHOOK_URL is required");
-    } else if (!this.isValidWebhookUrl(config.BOT_CHAT_WEBHOOK_URL)) {
-      errors.push("BOT_CHAT_WEBHOOK_URL must be a valid Discord webhook URL");
+    // BOT_CHAT_WEBHOOK_URL is optional - only validate if provided
+    if (config.BOT_CHAT_WEBHOOK_URL && config.BOT_CHAT_WEBHOOK_URL.trim()) {
+      if (!this.isValidWebhookUrl(config.BOT_CHAT_WEBHOOK_URL)) {
+        errors.push("BOT_CHAT_WEBHOOK_URL must be a valid Discord webhook URL");
+      }
     }
 
     // Check bot webhooks
-    if (
-      !config.BOT_NAMES_WITH_DISCORD_WEBHOOKS ||
-      Object.keys(config.BOT_NAMES_WITH_DISCORD_WEBHOOKS).length === 0
-    ) {
+    if (!config.BOT_CONFIG || Object.keys(config.BOT_CONFIG).length === 0) {
       warnings.push(
         "No bot webhooks configured - level up and quest notifications will not work"
       );
     } else {
       // Validate each bot webhook
-      for (const [botName, webhookUrl] of Object.entries(
-        config.BOT_NAMES_WITH_DISCORD_WEBHOOKS
-      )) {
-        if (!webhookUrl || !webhookUrl.trim()) {
+      for (const [botName, botConfig] of Object.entries(config.BOT_CONFIG)) {
+        if (!botConfig.webhookUrl || !botConfig.webhookUrl.trim()) {
           errors.push(`Webhook URL for bot "${botName}" is empty`);
-        } else if (!this.isValidWebhookUrl(webhookUrl)) {
+        } else if (!this.isValidWebhookUrl(botConfig.webhookUrl)) {
           errors.push(`Invalid webhook URL for bot "${botName}"`);
         }
       }
@@ -211,6 +217,56 @@ class FileConfigManager {
       errors: [],
       warnings,
     };
+  }
+
+  /**
+   * Convert old bot configuration format to new standardized format
+   * @param {Object} botConfig - Bot configuration object (old or new format)
+   * @returns {Object} - Standardized bot configuration
+   */
+  convertBotConfigToNewFormat(botConfig) {
+    const convertedConfig = {};
+
+    for (const [botName, botData] of Object.entries(botConfig)) {
+      if (typeof botData === "string") {
+        // Old format: "BotName": "webhook_url"
+        convertedConfig[botName] = {
+          webhookUrl: botData,
+          launchCLI: "",
+        };
+      } else if (botData && typeof botData === "object") {
+        // Check if it's already in new format or old format with different property names
+        if (botData.webhookUrl !== undefined) {
+          // Already in new format
+          convertedConfig[botName] = {
+            webhookUrl: botData.webhookUrl || "",
+            launchCLI: botData.launchCLI || "",
+          };
+        } else if (botData.webhook !== undefined) {
+          // Old format: { webhook: "url", launchCLI: "command" }
+          convertedConfig[botName] = {
+            webhookUrl: botData.webhook || "",
+            launchCLI: botData.launchCLI || "",
+          };
+        } else {
+          // Invalid format, skip this bot
+          console.warn(
+            `Skipping invalid bot configuration for ${botName}:`,
+            botData
+          );
+          continue;
+        }
+      } else {
+        // Invalid format, skip this bot
+        console.warn(
+          `Skipping invalid bot configuration for ${botName}:`,
+          botData
+        );
+        continue;
+      }
+    }
+
+    return convertedConfig;
   }
 
   /**
@@ -240,10 +296,48 @@ class FileConfigManager {
     return {
       baseLogDir: config.BASE_LOG_DIR,
       botChatWebhookConfigured: !!config.BOT_CHAT_WEBHOOK_URL,
-      botCount: Object.keys(config.BOT_NAMES_WITH_DISCORD_WEBHOOKS || {})
-        .length,
-      botNames: Object.keys(config.BOT_NAMES_WITH_DISCORD_WEBHOOKS || {}),
+      botCount: Object.keys(config.BOT_CONFIG || {}).length,
+      botNames: Object.keys(config.BOT_CONFIG || {}),
     };
+  }
+
+  /**
+   * Export configuration to external file
+   * @param {BrowserWindow} mainWindow - Main window for dialog
+   * @param {Object} config - Configuration object to export
+   * @returns {Object} Result with success status or error
+   */
+  async exportConfig(mainWindow, config) {
+    try {
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: "Export Configuration File",
+        defaultPath: "config_export.json",
+        filters: [
+          { name: "JSON Files", extensions: ["json"] },
+          { name: "All Files", extensions: ["*"] },
+        ],
+      });
+
+      if (result.canceled) {
+        return { success: false, error: "Export cancelled" };
+      }
+
+      const filePath = result.filePath;
+
+      // Ensure the config is in the new standardized format before exporting
+      const exportConfig = { ...config };
+      if (exportConfig.BOT_CONFIG) {
+        exportConfig.BOT_CONFIG = this.convertBotConfigToNewFormat(
+          exportConfig.BOT_CONFIG
+        );
+      }
+
+      fs.writeFileSync(filePath, JSON.stringify(exportConfig, null, 2), "utf8");
+
+      return { success: true, filePath };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 }
 

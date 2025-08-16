@@ -97,7 +97,7 @@ export function getConfigSummary() {
     hasBaseLogDir: hasConfigKey("BASE_LOG_DIR"),
     hasBotChatWebhook: hasConfigKey("BOT_CHAT_WEBHOOK_URL"),
     botWebhookCount: Object.keys(
-      globalConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS || {}
+      globalConfig.BOT_CONFIG || {}
     ).length,
   };
 }
