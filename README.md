@@ -1,174 +1,196 @@
-# 🤖 DreamBot Bot Monitor
+# DreamBot Bot Monitor
 
-A Node.js application that monitors DreamBot log files and sends notifications to Discord webhooks for various events like chat messages, level ups, and quest completions.
+A modern Electron application for monitoring DreamBot logs and sending notifications to Discord webhooks.
 
-Designed to work with [P2P Master AI script](https://dreambot.org/forums/index.php?/topic/26725-p2p-master-ai-machine-learning-1-click-account-builder/), untested with other scripts
+## 🚀 Features
 
-## ✨ Features
-
-- **📡 Real-time Log Monitoring**: Watches DreamBot log files for changes
-- **💬 Chat Detection**: Monitors for chat messages and bot responses
-- **🎯 Level Up Notifications**: Sends notifications when bots level up skills
-- **🏆 Quest Completion**: Tracks and reports quest completions
-- **🔗 Discord Integration**: Sends all notifications to configurable Discord webhooks
-- **🤖 Multi-bot Support**: Monitor multiple bots simultaneously
+- **Real-time Log Monitoring**: Watch DreamBot log files for activity
+- **Discord Integration**: Send notifications to Discord channels via webhooks
+- **Bot-Specific Webhooks**: Configure different webhooks for different bots
+- **Modern UI**: Clean, responsive interface built with modern web technologies
+- **Cross-Platform**: Works on Windows, macOS, and Linux
 
 ## 📁 Project Structure
 
 ```
-P2P-bot-monitor/
-├── 📂 app/
-│   ├── 📄 processLogFile.js    # Main log processing logic
-│   ├── 📋 constants.js         # Application constants and patterns
-│   └── 🛠️ utils/
-│       ├── 📝 logger.js        # Centralized logging utility
-│       ├── 💬 messageFormatter.js # Discord message formatting
-│       ├── 📈 levelUpUtils.js  # Level up message formatting
-│       ├── 🏆 questUtils.js    # Quest completion formatting
-│       ├── 💤 breakUtils.js    # Break duration formatting
-│       └── 🔗 webhookUtils.js  # Webhook URL management
-├── 🛠️ utils/
-│   └── ✅ configValidator.js   # Configuration validation
-├── ⚙️ config.js                # Configuration file
-├── 📋 baseConfig.js            # Base configuration template
-├── 🚀 server.js                # Main application entry point
-├── 📦 package.json             # Dependencies and scripts
-├── 🖥️ bot-monitor.bat          # Windows batch file for easy startup
-└── 📖 README.md                # This file
+DreamBotBotMonitor/
+├── src/                          # Source code
+│   ├── main/                     # Main process (Electron)
+│   │   └── main.js              # Main process entry point
+│   ├── preload/                  # Preload scripts
+│   │   └── preload.cjs          # Preload script for security
+│   ├── renderer/                 # Renderer process (UI)
+│   │   ├── index.html           # Main HTML interface
+│   │   ├── renderer.js          # UI logic and interactions
+│   │   └── styles.css           # Application styling
+│   ├── utils/                    # Utility functions
+│   │   ├── logger.js            # Logging utilities
+│   │   ├── configValidator.js   # Configuration validation
+│   │   ├── webhookUtils.js      # Discord webhook utilities
+│   │   ├── messageFormatter.js  # Message formatting
+│   │   ├── skillUtils.js        # Skill-related utilities
+│   │   ├── breakUtils.js        # Break detection utilities
+│   │   ├── processLogFile.js    # Log file processing
+│   │   └── constants.js         # Application constants
+│   └── shared/                   # Shared utilities (future use)
+├── resources/                     # Build resources (icons, etc.)
+├── dist/                         # Build output directory
+├── package.json                  # Project configuration
+├── bozon.js                      # Bozon build configuration
+└── README.md                     # This file
+```
+
+## 🛠️ Development
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd DreamBotBotMonitor
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start development mode:
+
+```bash
+npm run dev
+```
+
+### Available Scripts
+
+- `npm run dev` - Start development mode with hot reload
+- `npm run start` - Start production mode
+- `npm run test` - Run tests
+- `npm run build` - Build for current platform
+- `npm run build:win` - Build for Windows
+- `npm run build:mac` - Build for macOS
+- `npm run build:linux` - Build for Linux
+- `npm run package` - Package the application
+- `npm run dist` - Create distributable packages
+
+## 🏗️ Building
+
+### Development Build
+
+```bash
+npm run build
+```
+
+### Production Build
+
+```bash
+npm run dist
+```
+
+### Platform-Specific Builds
+
+```bash
+# Windows
+npm run build:win
+npm run dist:win
+
+# macOS
+npm run build:mac
+npm run dist:mac
+
+# Linux
+npm run build:linux
+npm run dist:linux
 ```
 
 ## ⚙️ Configuration
 
-Create a `config.js` file with the following structure:
+The application uses a configuration file (`config.json`) to store:
 
-```javascript
-const config = {
-    // Directory containing DreamBot log files
-    "BASE_LOG_DIR": "C:\\Users\\username\\DreamBot\\Logs",
-    
-    // Bot-specific webhook URLs for level up and quest notifications
-    "BOT_NAMES_WITH_DISCORD_WEBHOOKS": {
-        "MyBot1": "https://discord.com/api/webhooks/...",
-        "MyBot2": "https://discord.com/api/webhooks/..."
-    },
-    
-    // General webhook URL for chat messages
-    "BOT_CHAT_WEBHOOK_URL": "https://discord.com/api/webhooks/..."
-};
+- **BASE_LOG_DIR**: Directory containing DreamBot log files
+- **BOT_CHAT_WEBHOOK_URL**: General Discord webhook for chat notifications
+- **BOT_NAMES_WITH_DISCORD_WEBHOOKS**: Bot-specific webhook configurations
 
-export default config;
+### Example Configuration
+
+```json
+{
+  "BASE_LOG_DIR": "C:\\Users\\username\\DreamBot\\Logs",
+  "BOT_CHAT_WEBHOOK_URL": "https://discord.com/api/webhooks/...",
+  "BOT_NAMES_WITH_DISCORD_WEBHOOKS": {
+    "MyBot1": "https://discord.com/api/webhooks/...",
+    "MyBot2": "https://discord.com/api/webhooks/..."
+  }
+}
 ```
 
-**💡 Tip**: Use `baseConfig.js` as a starting template for your configuration!
+## 🔧 Architecture
 
-## 🚀 Installation
+### Main Process (`src/main/main.js`)
 
-1. **📥 Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd P2P-bot-monitor
-   ```
+- Manages Electron window lifecycle
+- Handles IPC communication
+- Manages file system operations
+- Coordinates between renderer and system
 
-2. **📦 Install dependencies**
-   ```bash
-   npm install
-   ```
+### Preload Script (`src/preload/preload.cjs`)
 
-3. **⚙️ Configure your `config.js` file**, using `baseConfig.js` as a reference
+- Securely exposes Node.js APIs to renderer
+- Manages context isolation
+- Handles IPC setup
 
-4. **▶️ Start the application**
-   1. Using npm
-   ```bash
-   npm start
-   ```
-   2. Using `bot-monitor.bat`
+### Renderer Process (`src/renderer/`)
 
-## 🎮 Usage
+- User interface components
+- Event handling and user interactions
+- Communication with main process via IPC
 
-The application will:
-1. ✅ Validate your configuration on startup
-2. 👀 Begin monitoring the specified log directory
-3. 🔄 Process new log entries in real-time
-4. 📤 Send appropriate notifications to Discord webhooks
+### Utilities (`src/utils/`)
 
-## 📊 Log Events
+- Business logic and helper functions
+- Configuration management
+- Log processing and webhook handling
 
-### 💬 Chat Messages
-- **🔍 Pattern**: `[INFO] CHAT: <message>`
-- **📤 Action**: Sends notification to general chat webhook
+## 🚀 Deployment
 
-### 🤖 Bot Responses
-- **🔍 Pattern**: `[INFO] SLOWLY TYPING RESPONSE: <response>`
-- **📤 Action**: Sends notification with original chat and bot response
+### Windows
 
-### 📈 Level Ups
-- **🔍 Pattern**: `you've just advanced your <skill> level. You are now level <level>`
-- **📤 Action**: Sends notification to bot-specific webhook
+- Creates NSIS installer
+- Output: `dist/DreamBotBotMonitor Setup.exe`
 
-### 🏆 Quest Completions
-- **🔍 Pattern**: `completed a quest: <col=...><quest_name></col>`
-- **📤 Action**: Sends notification to bot-specific webhook
+### macOS
 
-### ☕ Bot Breaks
-- **🔍 Pattern**: `[SCRIPT] Break length <milliseconds>`
-- **📤 Action**: Sends notification to bot-specific webhook with human-readable duration
-- **💡 Example**: `[SCRIPT] Break length 12860461` → "💤 **Bot Break Started!**\n**Bot:** MyBot\n**Break Duration:** 3 hours 34 minutes 20 seconds"
+- Creates DMG package
+- Output: `dist/DreamBotBotMonitor.dmg`
 
-### ✅ Break Finished
-- **🔍 Pattern**: `[SCRIPT] Break over`
-- **📤 Action**: Sends notification to bot-specific webhook when break ends
-- **💡 Example**: `[SCRIPT] Break over` → "⏰ **Bot Break Finished!**\n**Bot:** MyBot"
+### Linux
 
-### 💀 Bot Death
-- **🔍 Pattern**: `Oh dear, you are dead!`
-- **📤 Action**: Sends notification to bot-specific webhook when bot dies
-- **💡 Example**: `Oh dear, you are dead!` → "💀 **Bot Died!**\n**Bot:** MyBot"
+- Creates AppImage
+- Output: `dist/DreamBotBotMonitor.AppImage`
 
-### 💰 Valuable Drops
-- **🔍 Pattern**: `[INFO] [GAME] <col=<any_color>>Valuable drop: <item> (<coins> coins)</col>`
-- **📤 Action**: Sends notification to bot-specific webhook with item name and coin value
-- **💡 Example**: `[INFO] [GAME] <col=ef1020>Valuable drop: Onyx (3,038,047 coins)</col>` → "💰 **Valuable Drop!**\n**Bot:** MyBot\n**Item:** Onyx\n**Value:** 3,038,047 coins"
-- **⚠️ NOTE**: This trigger is controlled by the valuable drop setting in OSRS, make sure to set it to true and value threshold you want
+## 📝 License
 
-## 🛠️ Development
+ISC License - see LICENSE file for details.
 
-### 🔧 Adding New Log Patterns
-1. ➕ Add the regex pattern to `app/constants.js`
-2. 🆕 Create a processing function in `app/processLogFile.js`
-3. 🔗 Add the pattern matching logic to `processLogLine()`
+## 👨‍💻 Author
 
-### 💬 Adding New Message Types
-1. 📝 Define the message format in `app/constants.js`
-2. 🎨 Create a formatter function in `app/utils/messageFormatter.js`
-3. 🔄 Update the `processLogFile` to use the new formatter
+**MapleYeti** - [GitHub](https://github.com/MapleYeti)
 
-## 📦 Dependencies
+## 🤝 Contributing
 
-- **chokidar**: File system watching
-- **axios**: HTTP requests for webhooks
-- **Node.js**: Built-in modules for file system and streams
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## 🚨 Troubleshooting
+## 🐛 Issues
 
-### ❌ Common Issues
-
-1. **📁 Log directory not found**
-   - Verify the `BASE_LOG_DIR` path in `config.js`
-   - Ensure DreamBot logging is enabled
-   - Check file permissions
-
-2. **🔗 Webhook errors**
-   - Verify Discord webhook URLs are correct
-   - Check Discord server permissions
-   - Ensure webhook URLs haven't expired
-
-3. **📤 No notifications**
-   - Confirm bot names match DreamBot log folder names
-   - Check console output for error messages
-   - Verify webhook configurations
-
-### 📝 Log Files
-- Check console output for real-time status
-- Monitor for error messages and webhook failures
-
-**🎮 Happy Bot Monitoring!** 🚀
+Please report bugs and feature requests through the GitHub issues page.

@@ -1,21 +1,64 @@
 {
-  "name": "runescape-bot-monitor",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "DreamBotBotMonitor",
+  "version": "0.1.0",
+  "description": "DreamBotBotMonitor application build with Electron",
+  "main": "src/main/main.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "node server.js",
-    "monitor": "node server.js",
-    "start:watch": "powershell -ExecutionPolicy Bypass -File .\\bot-monitor.ps1",
-    "start:restart": "powershell -ExecutionPolicy Bypass -File .\\bot-monitor.ps1 -Restart"
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "jest",
+    "build": "bozon build",
+    "build:win": "bozon build win",
+    "build:mac": "bozon build mac",
+    "build:linux": "bozon build linux",
+    "package": "bozon package",
+    "package:win": "bozon package win",
+    "package:mac": "bozon package mac",
+    "package:linux": "bozon package linux",
+    "dist": "bozon dist",
+    "dist:win": "bozon dist win",
+    "dist:mac": "bozon dist mac",
+    "dist:linux": "bozon dist linux"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "MapleYeti",
+    "email": ""
+  },
+  "repository": {},
   "dependencies": {
     "axios": "^1.11.0",
     "chokidar": "^4.0.3"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "bozon": "1.3.5",
+    "jest": "30.0.5",
+    "spectron": "19.0.0",
+    "electron": "^37.3.0"
+  },
+  "build": {
+    "appId": "com.electron.dreambot-bot-monitor",
+    "productName": "DreamBot Bot Monitor",
+    "directories": {
+      "output": "dist",
+      "buildResources": "resources"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "publish": null,
+      "target": "nsis"
+    },
+    "mac": {
+      "publish": null,
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "publish": null,
+      "target": "AppImage"
+    }
   }
 }
