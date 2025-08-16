@@ -17,7 +17,16 @@ const botModal = document.getElementById("botModal");
 const botName = document.getElementById("botName");
 const botWebhook = document.getElementById("botWebhook");
 const saveBotBtn = document.getElementById("saveBotBtn");
-const cancelBotBtn = document.getElementById("cancelBotBtn");
+const cancelBotBtn = document.getElementById("cancelBtn");
+
+// Accordion elements
+const configAccordionHeader = document.getElementById("configAccordionHeader");
+const configAccordionToggle = document.getElementById("configAccordionToggle");
+const configAccordionContent = document.getElementById(
+  "configAccordionContent"
+);
+const configStatusIcon = document.getElementById("configStatusIcon");
+const configStatusText = document.getElementById("configStatusText");
 
 // State
 let currentConfig = {
@@ -58,6 +67,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Then load configuration and setup UI
     await loadConfiguration();
     setupEventListeners();
+
+    // Add a small delay to ensure DOM is fully ready for accordion
+    setTimeout(() => {
+      setupAccordionHandlers();
+    }, 100);
+
     updateUI();
 
     console.log("Application initialization complete!");
@@ -104,6 +119,11 @@ function validateDOMElements() {
     "botWebhook",
     "saveBotBtn",
     "cancelBotBtn",
+    "configAccordionHeader",
+    "configAccordionToggle",
+    "configAccordionContent",
+    "configStatusIcon",
+    "configStatusText",
   ];
 
   for (const id of requiredElements) {
@@ -150,24 +170,146 @@ function hideStartupStatus() {
 
 // Event Listeners
 function setupEventListeners() {
-  selectDirBtn.addEventListener("click", selectDirectory);
-  addBotBtn.addEventListener("click", showAddBotModal);
-  saveConfigBtn.addEventListener("click", saveConfiguration);
-  loadConfigBtn.addEventListener("click", loadConfiguration);
-  startBtn.addEventListener("click", startMonitoring);
-  stopBtn.addEventListener("click", stopMonitoring);
-  clearLogsBtn.addEventListener("click", clearLogs);
+  // Debug: Check which elements are null
+  const elementsToCheck = {
+    selectDirBtn,
+    addBotBtn,
+    saveConfigBtn,
+    loadConfigBtn,
+    startBtn,
+    stopBtn,
+    clearLogsBtn,
+    saveBotBtn,
+    cancelBotBtn,
+    botModal,
+  };
+
+  for (const [name, element] of Object.entries(elementsToCheck)) {
+    if (!element) {
+      console.error(`Element ${name} is null during setupEventListeners`);
+    }
+  }
+
+  selectDirBtn?.addEventListener("click", selectDirectory);
+  addBotBtn?.addEventListener("click", showAddBotModal);
+  saveConfigBtn?.addEventListener("click", saveConfiguration);
+  loadConfigBtn?.addEventListener("click", importConfiguration);
+  startBtn?.addEventListener("click", startMonitoring);
+  stopBtn?.addEventListener("click", stopMonitoring);
+  clearLogsBtn?.addEventListener("click", clearLogs);
 
   // Modal events
-  saveBotBtn.addEventListener("click", saveBotWebhook);
-  cancelBotBtn.addEventListener("click", hideAddBotModal);
+  saveBotBtn?.addEventListener("click", saveBotWebhook);
+  cancelBotBtn?.addEventListener("click", hideAddBotModal);
 
   // Close modal when clicking outside
-  botModal.addEventListener("click", (e) => {
+  botModal?.addEventListener("click", (e) => {
     if (e.target === botModal) {
       hideAddBotModal();
     }
   });
+}
+
+// Accordion Setup
+function setupAccordionHandlers() {
+  // Debug: Check which accordion elements are null
+  const accordionElementsToCheck = {
+    configAccordionHeader,
+    configAccordionToggle,
+    configAccordionContent,
+    configStatusIcon,
+    configStatusText,
+  };
+
+  for (const [name, element] of Object.entries(accordionElementsToCheck)) {
+    if (!element) {
+      console.error(
+        `Accordion element ${name} is null during setupAccordionHandlers`
+      );
+    }
+  }
+
+  // Toggle accordion when header is clicked
+  configAccordionHeader?.addEventListener("click", toggleAccordion);
+
+  // Toggle accordion when toggle button is clicked
+  configAccordionToggle?.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevent header click event
+    toggleAccordion();
+  });
+
+  // Start with accordion expanded
+  expandAccordion();
+
+  // Update configuration status
+  updateConfigurationStatus();
+}
+
+function toggleAccordion() {
+  if (!configAccordionContent) {
+    console.error("configAccordionContent is null in toggleAccordion");
+    return;
+  }
+
+  if (configAccordionContent.classList.contains("expanded")) {
+    collapseAccordion();
+  } else {
+    expandAccordion();
+  }
+}
+
+function expandAccordion() {
+  if (!configAccordionContent || !configAccordionToggle) {
+    console.error("Required accordion elements are null in expandAccordion");
+    return;
+  }
+
+  configAccordionContent.classList.add("expanded");
+  const toggleIcon = configAccordionToggle.querySelector(".toggle-icon");
+  if (toggleIcon) {
+    toggleIcon.textContent = "▼";
+    toggleIcon.style.transform = "rotate(0deg)";
+  }
+}
+
+function collapseAccordion() {
+  if (!configAccordionContent || !configAccordionToggle) {
+    console.error("Required accordion elements are null in collapseAccordion");
+    return;
+  }
+
+  configAccordionContent.classList.remove("expanded");
+  const toggleIcon = configAccordionToggle.querySelector(".toggle-icon");
+  if (toggleIcon) {
+    toggleIcon.textContent = "▶";
+    toggleIcon.style.transform = "rotate(-90deg)";
+  }
+}
+
+function updateConfigurationStatus() {
+  if (!configStatusIcon || !configStatusText) {
+    console.error("Status elements are null in updateConfigurationStatus");
+    return;
+  }
+
+  const hasLogsDir =
+    currentConfig.BASE_LOG_DIR && currentConfig.BASE_LOG_DIR.trim() !== "";
+  const hasWebhooks =
+    Object.keys(currentConfig.BOT_NAMES_WITH_DISCORD_WEBHOOKS).length > 0;
+
+  if (hasLogsDir && hasWebhooks) {
+    configStatusIcon.textContent = "✅";
+    configStatusText.textContent = "Complete";
+    configStatusIcon.style.color = "#38a169";
+  } else if (hasLogsDir || hasWebhooks) {
+    configStatusIcon.textContent = "⚠️";
+    configStatusText.textContent = "Partial";
+    configStatusIcon.style.color = "#d69e2e";
+  } else {
+    configStatusIcon.textContent = "❌";
+    configStatusText.textContent = "Not Configured";
+    configStatusIcon.style.color = "#e53e3e";
+  }
 }
 
 // Electron IPC Listeners
@@ -244,6 +386,7 @@ async function selectDirectory() {
     if (selectedPath) {
       logsDir.value = selectedPath;
       currentConfig.BASE_LOG_DIR = selectedPath;
+      updateConfigurationStatus();
       showSuccess("Directory selected successfully");
       addProgramLog(
         `✅ Directory selected: ${selectedPath}`,
@@ -473,6 +616,9 @@ function updateBotWebhooksDisplay() {
       botWebhooks.appendChild(item);
     }
   );
+
+  // Update configuration status after webhooks change
+  updateConfigurationStatus();
 }
 
 // Configuration Management
@@ -510,6 +656,65 @@ async function loadConfiguration() {
   }
 }
 
+async function importConfiguration() {
+  try {
+    if (!isElectronAPIAvailable()) {
+      showError(
+        "Electron API not available. Please wait for the application to fully load."
+      );
+      return;
+    }
+
+    // Show confirmation dialog
+    const confirmed = confirm(
+      "⚠️ Warning: Importing a configuration file will overwrite your current settings.\n\n" +
+        "This action cannot be undone. Are you sure you want to continue?"
+    );
+
+    if (!confirmed) {
+      addProgramLog(
+        "ℹ️ Configuration import cancelled by user",
+        "config",
+        "info"
+      );
+      return;
+    }
+
+    addProgramLog("📥 Importing configuration file...", "config", "info");
+
+    const result = await window.electronAPI.importConfig();
+    if (result.success) {
+      currentConfig = result.config;
+      updateFormFields();
+      updateBotWebhooksDisplay();
+      showSuccess("Configuration imported and loaded successfully");
+      addProgramLog(
+        "✅ Configuration imported and loaded successfully",
+        "config",
+        "success"
+      );
+    } else {
+      if (result.error === "Import cancelled") {
+        addProgramLog("ℹ️ Configuration import cancelled", "config", "info");
+      } else {
+        showError("Failed to import configuration: " + result.error);
+        addProgramLog(
+          `❌ Configuration import error: ${result.error}`,
+          "config",
+          "error"
+        );
+      }
+    }
+  } catch (error) {
+    showError("Failed to import configuration: " + error.message);
+    addProgramLog(
+      `❌ Configuration import error: ${error.message}`,
+      "config",
+      "error"
+    );
+  }
+}
+
 async function saveConfiguration() {
   try {
     if (!isElectronAPIAvailable()) {
@@ -532,6 +737,7 @@ async function saveConfiguration() {
 
     const result = await window.electronAPI.saveConfig(currentConfig);
     if (result.success) {
+      updateConfigurationStatus();
       showSuccess("Configuration saved successfully");
       addProgramLog("✅ Configuration saved successfully", "config", "success");
     } else {
@@ -555,6 +761,7 @@ async function saveConfiguration() {
 function updateFormFields() {
   logsDir.value = currentConfig.BASE_LOG_DIR || "";
   chatWebhook.value = currentConfig.BOT_CHAT_WEBHOOK_URL || "";
+  updateConfigurationStatus();
 }
 
 // Monitoring Control
@@ -747,8 +954,6 @@ function getTypeLabel(type) {
 function clearLogs() {
   logsDisplay.innerHTML =
     '<div class="no-logs">📋 Program output will appear here when monitoring is active.</div>';
-
-  addProgramLog("🧹 Logs cleared", "system", "info");
 }
 
 // UI Updates

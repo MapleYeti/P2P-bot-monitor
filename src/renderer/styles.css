@@ -83,7 +83,14 @@ body {
 }
 
 /* Sections */
-.config-section,
+.config-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
 .control-section,
 .logs-section {
     background: rgba(255, 255, 255, 0.95);
@@ -93,11 +100,105 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+/* Configuration form background to match other sections */
+.config-form {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
 section h2 {
     color: #2d3748;
     margin-bottom: 20px;
     font-size: 1.5rem;
     font-weight: 600;
+}
+
+/* Accordion Styles */
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.95);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.accordion-header:hover {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.accordion-title {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.accordion-title h2 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 24px;
+}
+
+.config-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    transition: all 0.3s ease;
+    color: #2d3748;
+}
+
+.config-status:hover {
+    background: rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.status-icon {
+    font-size: 16px;
+}
+
+.accordion-toggle {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    color: #2d3748;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.accordion-toggle:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+}
+
+.toggle-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block;
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accordion-content.expanded {
+    max-height: 1200px;
+}
+
+.config-form {
+    padding: 25px;
 }
 
 /* Form Elements */
@@ -139,6 +240,18 @@ section h2 {
     display: flex;
     gap: 15px;
     margin-top: 25px;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-help {
+    margin-top: 8px;
+    color: #718096;
+    font-style: italic;
+}
+
+.form-help small {
+    font-size: 12px;
 }
 
 .control-buttons {
