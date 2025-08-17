@@ -1,7 +1,5 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-console.log("Preload script starting...");
-
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld("electronAPI", {
@@ -16,9 +14,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Bot launching
   launchCLI: (command) => ipcRenderer.invoke("launch-cli", command),
+  terminateProcess: (pid) => ipcRenderer.invoke("terminate-process", pid),
   checkProcessStatus: (pid) => ipcRenderer.invoke("check-process-status", pid),
   getTrackedProcesses: () => ipcRenderer.invoke("get-tracked-processes"),
-  debugTrackedProcesses: () => ipcRenderer.invoke("debug-tracked-processes"),
 
   // Monitoring control
   startMonitoring: (config) => ipcRenderer.invoke("start-monitoring", config),
@@ -35,8 +33,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
 });
 
-console.log("Preload script completed - electronAPI exposed to window");
-
 // Also add a simple test property
 contextBridge.exposeInMainWorld("preloadTest", "Preload script is working!");
-console.log("Test property 'preloadTest' also exposed");
