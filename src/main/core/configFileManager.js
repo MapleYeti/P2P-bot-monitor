@@ -115,6 +115,9 @@ class FileConfigManager {
       if (!config.BOT_CHAT_WEBHOOK_URL) {
         config.BOT_CHAT_WEBHOOK_URL = "";
       }
+      if (!config.DREAMBOT_VIP_FEATURES) {
+        config.DREAMBOT_VIP_FEATURES = false;
+      }
       if (!config.BOT_CONFIG) {
         config.BOT_CONFIG = {};
       }
