@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         configUI.updateFormFields();
         configUI.updateBotsDisplay();
         configUI.updateConfigurationStatus();
+        configUI.updateLaunchCLIVisibility();
 
         if (result.success) {
           uiManager.showSuccess("Configuration loaded successfully");

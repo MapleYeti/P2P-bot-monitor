@@ -170,6 +170,7 @@ class FileConfigManager {
       const defaultConfig = {
         BASE_LOG_DIR: "",
         BOT_CHAT_WEBHOOK_URL: "",
+        DREAMBOT_VIP_FEATURES: false,
         BOT_CONFIG: {},
       };
 

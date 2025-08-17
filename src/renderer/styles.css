@@ -279,6 +279,22 @@ section h2 {
     font-size: 12px;
 }
 
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.checkbox-container .form-help {
+    margin-top: 0;
+}
+
 .control-buttons {
     display: flex;
     gap: 15px;

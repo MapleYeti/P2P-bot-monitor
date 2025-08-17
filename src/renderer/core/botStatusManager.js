@@ -69,6 +69,9 @@ class BotStatusManager {
     const config = this.uiManager.getConfig();
     const botConfig = config.BOT_CONFIG[botName];
 
+    // Use global config values for Launch button visibility (not current UI state)
+    const vipFeaturesEnabled = config.DREAMBOT_VIP_FEATURES || false;
+
     row.innerHTML = `
       <span class="bot-name">${botName}</span>
       <div class="bot-status">
@@ -77,7 +80,7 @@ class BotStatusManager {
       </div>
       <div class="bot-actions">
         ${
-          botConfig?.launchCLI
+          botConfig?.launchCLI && vipFeaturesEnabled
             ? `<button type="button" class="btn btn-small btn-secondary action-btn" data-bot-name="${botName}">${
                 status === "running" ? "🛑 Stop" : "🚀 Launch"
               }</button>`

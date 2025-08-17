@@ -138,10 +138,12 @@ class ConfigUI {
   updateFormFields() {
     const logsDir = document.getElementById("logsDir");
     const chatWebhook = document.getElementById("chatWebhook");
+    const vipFeatures = document.getElementById("vipFeatures");
 
-    if (logsDir && chatWebhook && this.originalConfig) {
+    if (logsDir && chatWebhook && vipFeatures && this.originalConfig) {
       logsDir.value = this.originalConfig.BASE_LOG_DIR || "";
       chatWebhook.value = this.originalConfig.BOT_CHAT_WEBHOOK_URL || "";
+      vipFeatures.checked = this.originalConfig.DREAMBOT_VIP_FEATURES || false;
 
       // Add event listeners to detect changes
       this.setupFormFieldListeners();
@@ -154,6 +156,7 @@ class ConfigUI {
   setupFormFieldListeners() {
     const logsDir = document.getElementById("logsDir");
     const chatWebhook = document.getElementById("chatWebhook");
+    const vipFeatures = document.getElementById("vipFeatures");
 
     if (logsDir) {
       logsDir.addEventListener("input", () => this.updateConfigurationStatus());
@@ -162,6 +165,16 @@ class ConfigUI {
       chatWebhook.addEventListener("input", () =>
         this.updateConfigurationStatus()
       );
+    }
+    if (vipFeatures) {
+      vipFeatures.addEventListener("change", () => {
+        this.updateConfigurationStatus();
+        this.updateLaunchCLIVisibility();
+        // Update bot display to show/hide Launch CLI status based on new checkbox state
+        this.updateBotsDisplay();
+        // Trigger a custom event to notify other components that VIP features changed
+        document.dispatchEvent(new CustomEvent("vipFeaturesChanged"));
+      });
     }
   }
 
@@ -174,6 +187,12 @@ class ConfigUI {
 
     botWebhooks.innerHTML = "";
     const config = this.uiManager.getConfig();
+
+    // Get current VIP features state from UI
+    const vipFeaturesCheckbox = document.getElementById("vipFeatures");
+    const vipFeaturesEnabled = vipFeaturesCheckbox
+      ? vipFeaturesCheckbox.checked
+      : false;
 
     Object.entries(config.BOT_CONFIG).forEach(([name, botData]) => {
       const hasWebhook = botData.webhookUrl && botData.webhookUrl.trim() !== "";
@@ -190,12 +209,16 @@ class ConfigUI {
                  hasWebhook ? "Configured" : "Optional"
                }</span>
              </span>
-                         <span class="config-item">
+                         ${
+                           vipFeaturesEnabled
+                             ? `<span class="config-item">
                <span class="status-icon">${hasLaunchCLI ? "✅" : "⚪"}</span>
                <span class="status-text">Launch CLI ${
                  hasLaunchCLI ? "Configured" : "Optional"
                }</span>
-             </span>
+             </span>`
+                             : ""
+                         }
           </div>
           <div class="bot-actions">
             <button type="button" class="btn btn-small btn-secondary edit-bot-btn" onclick="configUI.editBot('${name}')">Edit</button>
@@ -224,6 +247,9 @@ class ConfigUI {
       botWebhook.value = "";
       if (botLaunchCLI) botLaunchCLI.value = "";
       botName.focus();
+
+      // Show/hide Launch CLI field based on VIP features setting
+      this.updateLaunchCLIVisibility();
     }
   }
 
@@ -271,6 +297,7 @@ class ConfigUI {
       this.uiManager.setConfig(config);
       this.updateBotsDisplay();
       this.updateConfigurationStatus();
+      this.updateLaunchCLIVisibility();
       this.hideAddBotModal();
     } catch (error) {
       this.uiManager.showError("Failed to add bot: " + error.message);
@@ -289,6 +316,7 @@ class ConfigUI {
       this.uiManager.setConfig(config);
       this.updateBotsDisplay();
       this.updateConfigurationStatus();
+      this.updateLaunchCLIVisibility();
     } catch (error) {
       this.uiManager.showError("Failed to remove bot: " + error.message);
     }
@@ -324,6 +352,9 @@ class ConfigUI {
       editBotWebhook.value = currentWebhook;
       if (editBotLaunchCLI) editBotLaunchCLI.value = currentLaunchCLI;
       editBotWebhook.focus();
+
+      // Show/hide Launch CLI field based on VIP features setting
+      this.updateLaunchCLIVisibility();
     }
   }
 
@@ -334,6 +365,39 @@ class ConfigUI {
     const editModal = document.getElementById("editBotModal");
     if (editModal) {
       editModal.style.display = "none";
+    }
+  }
+
+  /**
+   * Update the visibility of Launch CLI fields based on VIP features setting
+   */
+  updateLaunchCLIVisibility() {
+    // Read the current checkbox state from the UI, not from saved config
+    const vipFeaturesCheckbox = document.getElementById("vipFeatures");
+    const vipFeaturesEnabled = vipFeaturesCheckbox
+      ? vipFeaturesCheckbox.checked
+      : false;
+
+    // Update add bot modal
+    const addBotLaunchCLI = document.getElementById("botLaunchCLI");
+    if (addBotLaunchCLI) {
+      const addBotLaunchCLIContainer = addBotLaunchCLI.closest(".form-group");
+      if (addBotLaunchCLIContainer) {
+        addBotLaunchCLIContainer.style.display = vipFeaturesEnabled
+          ? "block"
+          : "none";
+      }
+    }
+
+    // Update edit bot modal
+    const editBotLaunchCLI = document.getElementById("editBotLaunchCLI");
+    if (editBotLaunchCLI) {
+      const editBotLaunchCLIContainer = editBotLaunchCLI.closest(".form-group");
+      if (editBotLaunchCLIContainer) {
+        editBotLaunchCLIContainer.style.display = vipFeaturesEnabled
+          ? "block"
+          : "none";
+      }
     }
   }
 
@@ -369,6 +433,7 @@ class ConfigUI {
       this.uiManager.setConfig(config);
       this.updateBotsDisplay();
       this.updateConfigurationStatus();
+      this.updateLaunchCLIVisibility();
       this.hideEditBotModal();
     } catch (error) {
       this.uiManager.showError("Failed to update bot: " + error.message);
@@ -382,20 +447,20 @@ class ConfigUI {
     try {
       const logsDir = document.getElementById("logsDir");
       const chatWebhook = document.getElementById("chatWebhook");
+      const vipFeatures = document.getElementById("vipFeatures");
 
-      if (!logsDir || !chatWebhook) return;
+      if (!logsDir || !chatWebhook || !vipFeatures) return;
 
       const config = this.uiManager.getConfig();
 
       // Update the base config values from form fields
       config.BASE_LOG_DIR = logsDir.value.trim();
       config.BOT_CHAT_WEBHOOK_URL = chatWebhook.value.trim();
+      config.DREAMBOT_VIP_FEATURES = vipFeatures.checked;
 
       // Validate the configuration before saving
-      if (this.hasValidationErrors(this.uiManager.getConfig())) {
-        const validationErrors = this.getValidationErrors(
-          this.uiManager.getConfig()
-        );
+      if (this.hasValidationErrors(config)) {
+        const validationErrors = this.getValidationErrors(config);
         const errorMsg =
           "Cannot save configuration with validation errors. Please fix the errors first.";
 
@@ -458,6 +523,9 @@ class ConfigUI {
       // Update configuration status (this will show validation errors if they exist in the original config)
       this.updateConfigurationStatus();
 
+      // Update Launch CLI visibility based on restored config
+      this.updateLaunchCLIVisibility();
+
       this.uiManager.showSuccess(
         "All changes have been undone. Configuration restored from file."
       );
@@ -472,9 +540,7 @@ class ConfigUI {
   updateConfigurationStatus() {
     const config = this.uiManager.getConfig();
     const hasUnsavedChanges = this.hasUnsavedChanges();
-    const hasValidationErrors = this.hasValidationErrors(
-      this.uiManager.getConfig()
-    );
+    const hasValidationErrors = this.hasValidationErrors(config);
 
     // Update the config status indicator
     const configStatus = document.getElementById("configStatus");
@@ -536,19 +602,23 @@ class ConfigUI {
     // Get current form field values
     const logsDir = document.getElementById("logsDir");
     const chatWebhook = document.getElementById("chatWebhook");
+    const vipFeatures = document.getElementById("vipFeatures");
 
-    if (!logsDir || !chatWebhook) {
+    if (!logsDir || !chatWebhook || !vipFeatures) {
       console.log("hasUnsavedChanges: Form fields not found");
       return false;
     }
 
     const currentLogsDir = logsDir.value.trim();
     const currentChatWebhook = chatWebhook.value.trim();
+    const currentVipFeatures = vipFeatures.checked;
 
     // Check base config changes by comparing form field values to original config
     if (
       currentLogsDir !== (this.originalConfig.BASE_LOG_DIR || "") ||
-      currentChatWebhook !== (this.originalConfig.BOT_CHAT_WEBHOOK_URL || "")
+      currentChatWebhook !== (this.originalConfig.BOT_CHAT_WEBHOOK_URL || "") ||
+      currentVipFeatures !==
+        (this.originalConfig.DREAMBOT_VIP_FEATURES || false)
     ) {
       console.log("hasUnsavedChanges: Base config changed");
       return true;
@@ -604,22 +674,29 @@ class ConfigUI {
   }
 
   /**
-   * Check if there are validation errors in the current configuration
-   * @param {Object} config - Configuration object to validate
+   * Check if there are validation errors in the current form fields
+   * @param {Object} config - Configuration object to validate (for bot configs)
    * @returns {boolean} - Whether there are validation errors
    */
   hasValidationErrors(config) {
     try {
+      // Get current form field values
+      const logsDir = document.getElementById("logsDir");
+      const chatWebhook = document.getElementById("chatWebhook");
+
+      if (!logsDir || !chatWebhook) {
+        return false; // Can't validate if form fields aren't available
+      }
+
       // Check for required fields
-      if (!config.BASE_LOG_DIR || !config.BASE_LOG_DIR.trim()) {
+      if (!logsDir.value.trim()) {
         return true;
       }
 
       // Check BOT_CHAT_WEBHOOK_URL if provided (it's optional but must be valid if present)
-      if (config.BOT_CHAT_WEBHOOK_URL && config.BOT_CHAT_WEBHOOK_URL.trim()) {
-        if (!this.isValidWebhookUrl(config.BOT_CHAT_WEBHOOK_URL)) {
-          return true;
-        }
+      const chatWebhookValue = chatWebhook.value.trim();
+      if (chatWebhookValue && !this.isValidWebhookUrl(chatWebhookValue)) {
+        return true;
       }
 
       // Check bot webhook URLs if they are provided
@@ -642,26 +719,33 @@ class ConfigUI {
   }
 
   /**
-   * Get detailed validation errors for the current configuration
+   * Get detailed validation errors for the current form fields
    * This is a frontend-friendly version that returns user-friendly error messages
-   * @param {Object} config - Configuration object to validate
+   * @param {Object} config - Configuration object to validate (for bot configs)
    * @returns {Array} Array of user-friendly error messages
    */
   getValidationErrors(config) {
     const errors = [];
 
+    // Get current form field values
+    const logsDir = document.getElementById("logsDir");
+    const chatWebhook = document.getElementById("chatWebhook");
+
+    if (!logsDir || !chatWebhook) {
+      return ["Form fields not available for validation"];
+    }
+
     // Check for required fields
-    if (!config.BASE_LOG_DIR || !config.BASE_LOG_DIR.trim()) {
+    if (!logsDir.value.trim()) {
       errors.push("DreamBot Logs Directory is required");
     }
 
     // Check BOT_CHAT_WEBHOOK_URL if provided (it's optional but must be valid if present)
-    if (config.BOT_CHAT_WEBHOOK_URL && config.BOT_CHAT_WEBHOOK_URL.trim()) {
-      if (!this.isValidWebhookUrl(config.BOT_CHAT_WEBHOOK_URL)) {
-        errors.push(
-          "General Chat Webhook URL must be a valid Discord webhook URL"
-        );
-      }
+    const chatWebhookValue = chatWebhook.value.trim();
+    if (chatWebhookValue && !this.isValidWebhookUrl(chatWebhookValue)) {
+      errors.push(
+        "General Chat Webhook URL must be a valid Discord webhook URL"
+      );
     }
 
     // Check bot webhook URLs if they are provided
