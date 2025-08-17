@@ -62,7 +62,12 @@ class IPCHandlers {
     ipcMain.handle("launch-cli", async (event, command) => {
       try {
         console.log("Launching CLI command:", command);
-        const child = spawn("cmd.exe", ["/k", command], {
+        // Use cmd /k to execute the command and keep the window open
+        // Strip all quotation marks and split into arguments to avoid Windows shell quote parsing issues
+        const commandArgs = this.parseCommandToArgs(command);
+        console.log("Command arguments:", commandArgs);
+
+        const child = spawn("cmd.exe", ["/k", ...commandArgs], {
           detached: true,
           stdio: "ignore",
           windowsHide: false,
@@ -247,6 +252,29 @@ class IPCHandlers {
       console.error(`Error checking if process ${pid} is running:`, error);
       return false;
     }
+  }
+
+  /**
+   * Parse a command string into an array of arguments
+   * Keeps quoted strings as single arguments while removing the quotes
+   * @param {string} command - The command string to process
+   * @returns {string[]} Array of command arguments
+   */
+  parseCommandToArgs(command) {
+    // Match either quoted strings (without quotes) or non-quoted words
+    const regex = /"([^"]*)"|(\S+)/g;
+    const args = [];
+    let match;
+
+    while ((match = regex.exec(command)) !== null) {
+      // match[1] contains quoted content, match[2] contains non-quoted content
+      const arg = match[1] || match[2];
+      if (arg.trim()) {
+        args.push(arg.trim());
+      }
+    }
+
+    return args;
   }
 }
 
