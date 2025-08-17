@@ -61,13 +61,10 @@ class IPCHandlers {
     // Launch CLI command
     ipcMain.handle("launch-cli", async (event, command) => {
       try {
-        console.log(`Launching CLI command: ${command}`);
-
-        // Use child_process.spawn to execute the command directly in a new terminal
-        const child = spawn("cmd", ["/k", command], {
+        const child = spawn("cmd.exe", ["/k", command], {
           detached: true,
           stdio: "ignore",
-          shell: true,
+          windowsHide: false,
         });
 
         // Track the child process directly
@@ -79,11 +76,7 @@ class IPCHandlers {
 
         // Set up event listeners for the child process
         child.on("exit", (code, signal) => {
-          console.log(
-            `Process ${child.pid} exited with code ${code} and signal ${signal}`
-          );
           this.trackedProcesses.delete(child.pid);
-
           // Notify renderer process that this process has exited
           this.notifyProcessExited(child.pid, code, signal);
         });
@@ -93,9 +86,6 @@ class IPCHandlers {
           this.trackedProcesses.delete(child.pid);
         });
 
-        // Unreference the child process so it can run independently
-        child.unref();
-
         return { success: true, pid: child.pid };
       } catch (error) {
         console.error("Failed to launch CLI:", error);
@@ -103,15 +93,68 @@ class IPCHandlers {
       }
     });
 
+    // Terminate a running process
+    ipcMain.handle("terminate-process", async (event, pid) => {
+      try {
+        const { exec } = await import("child_process");
+        const { promisify } = await import("util");
+        const execAsync = promisify(exec);
+
+        // Use taskkill /T to terminate the entire process tree
+        // This ensures all child processes (like java.exe) are also terminated
+        try {
+          await execAsync(`taskkill /PID ${pid} /T`);
+          console.log(`Process tree for PID ${pid} terminated gracefully`);
+        } catch (error) {
+          // Check if the error is "process not found" - this means it was already terminated
+          if (
+            error.message.includes("not found") ||
+            error.message.includes("No tasks")
+          ) {
+            console.log(`Process ${pid} was already terminated`);
+            return { success: true };
+          }
+
+          // If graceful termination fails, force kill the entire tree
+          console.log(`Force killing process tree for PID ${pid}`);
+          try {
+            await execAsync(`taskkill /PID ${pid} /T /F`);
+            console.log(`Process tree for PID ${pid} force killed`);
+          } catch (forceError) {
+            // Check if force kill also failed due to process not found
+            if (
+              forceError.message.includes("not found") ||
+              forceError.message.includes("No tasks")
+            ) {
+              console.log(`Process ${pid} was terminated during force kill`);
+              return { success: true };
+            }
+            throw forceError; // Re-throw if it's a real error
+          }
+        }
+
+        // Also try to kill the tracked process directly as a backup
+        const trackedProcess = this.trackedProcesses.get(pid);
+        if (trackedProcess?.process) {
+          try {
+            trackedProcess.process.kill();
+          } catch (e) {
+            // Ignore errors here as taskkill should have handled it
+          }
+        }
+
+        return { success: true };
+      } catch (error) {
+        console.error(`Failed to terminate process ${pid}:`, error);
+        return { success: false, error: error.message };
+      }
+    });
+
     // Check process status
     ipcMain.handle("check-process-status", async (event, pid) => {
       try {
-        console.log(`Checking process status for PID: ${pid}`);
-
         // Check if process is still running
         const isRunning = await this.isProcessRunning(pid);
-
-        console.log(`Process ${pid} is running: ${isRunning}`);
         return { isRunning };
       } catch (error) {
         console.error("Failed to check process status:", error);
@@ -131,27 +174,6 @@ class IPCHandlers {
       });
       return processes;
     });
-
-    // Debug: Get detailed tracking information
-    ipcMain.handle("debug-tracked-processes", () => {
-      const debugInfo = {
-        totalProcesses: this.trackedProcesses.size,
-        processes: Array.from(this.trackedProcesses.entries()),
-        details: {},
-      };
-
-      this.trackedProcesses.forEach((info, pid) => {
-        debugInfo.details[pid] = {
-          ...info,
-          processAlive: info.process ? !info.process.killed : "N/A",
-          hasExitListener: info.process
-            ? !!info.process.listenerCount("exit")
-            : "N/A",
-        };
-      });
-
-      return debugInfo;
-    });
   }
 
   // Method to remove all handlers (useful for cleanup)
@@ -165,9 +187,9 @@ class IPCHandlers {
     ipcMain.removeHandler("stop-monitoring");
     ipcMain.removeHandler("get-monitoring-status");
     ipcMain.removeHandler("launch-cli");
+    ipcMain.removeHandler("terminate-process");
     ipcMain.removeHandler("check-process-status");
     ipcMain.removeHandler("get-tracked-processes");
-    ipcMain.removeHandler("debug-tracked-processes");
   }
 
   /**

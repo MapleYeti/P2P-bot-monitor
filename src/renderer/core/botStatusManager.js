@@ -3,7 +3,6 @@ class BotStatusManager {
     this.uiManager = uiManager;
     this.botStatuses = new Map(); // Map to store bot statuses
     this.botProcesses = new Map(); // Map to store bot process PIDs
-    this.processCheckFailures = new Map(); // Map to track consecutive failures
     this.setupEventListeners();
   }
 
@@ -17,14 +16,6 @@ class BotStatusManager {
     if (window.electronAPI && window.electronAPI.onProcessExited) {
       window.electronAPI.onProcessExited((event, data) => {
         this.handleProcessExited(data.pid, data.code, data.signal);
-      });
-    }
-
-    // Set up debug button
-    const debugBtn = document.getElementById("debugTrackingBtn");
-    if (debugBtn) {
-      debugBtn.addEventListener("click", () => {
-        this.debugTracking();
       });
     }
   }
@@ -87,16 +78,30 @@ class BotStatusManager {
       <div class="bot-actions">
         ${
           botConfig?.launchCLI
-            ? `<button type="button" class="btn btn-small btn-secondary launch-bot-btn" data-bot-name="${botName}">🚀 Launch</button>`
+            ? `<button type="button" class="btn btn-small btn-secondary action-btn" data-bot-name="${botName}">${
+                status === "running" ? "🛑 Stop" : "🚀 Launch"
+              }</button>`
             : ""
         }
       </div>
     `;
 
     // Add event listeners
-    const launchBtn = row.querySelector(".launch-bot-btn");
-    if (launchBtn) {
-      launchBtn.addEventListener("click", () => this.launchBot(botName));
+    const actionBtn = row.querySelector(".action-btn");
+    if (actionBtn) {
+      // Store the current status in the button's data attribute for reference
+      actionBtn.setAttribute("data-current-status", status);
+
+      actionBtn.addEventListener("click", (event) => {
+        const button = event.target;
+        const currentStatus = button.getAttribute("data-current-status");
+
+        if (currentStatus === "running") {
+          this.terminateBot(botName);
+        } else {
+          this.launchBot(botName);
+        }
+      });
     }
 
     return row;
@@ -130,11 +135,50 @@ class BotStatusManager {
         ".status-indicator-bot"
       );
       const statusText = existingRow.querySelector(".status-text-bot");
+      const actionBtn = existingRow.querySelector(".action-btn");
 
       if (statusIndicator && statusText) {
         statusIndicator.className = `status-indicator-bot ${status}`;
         statusText.textContent = this.getStatusInfo(status).text;
       }
+
+      // Update button text and data attribute based on new status
+      if (actionBtn) {
+        actionBtn.textContent = status === "running" ? "🛑 Stop" : "🚀 Launch";
+        actionBtn.setAttribute("data-current-status", status);
+      }
+    }
+  }
+
+  /**
+   * Terminate a running bot
+   */
+  async terminateBot(botName) {
+    try {
+      const pid = this.botProcesses.get(botName);
+
+      if (!pid) {
+        this.uiManager.showError(`No running process found for ${botName}`);
+        return;
+      }
+
+      this.uiManager.showInfo(`Stopping ${botName}...`);
+
+      const result = await window.electronAPI.terminateProcess(pid);
+
+      if (result.success) {
+        // Remove from tracking and update status
+        this.botProcesses.delete(botName);
+        this.updateBotStatus(botName, "stopped");
+        // Don't call updateBotStatusList() here as it recreates all rows and loses event listeners
+
+        this.uiManager.showSuccess(`${botName} has been stopped`);
+      } else {
+        this.uiManager.showError(`Failed to stop ${botName}: ${result.error}`);
+      }
+    } catch (error) {
+      console.error(`Error in terminateBot:`, error);
+      this.uiManager.showError(`Failed to stop ${botName}: ${error.message}`);
     }
   }
 
@@ -180,75 +224,6 @@ class BotStatusManager {
   }
 
   /**
-   * Get all bot statuses
-   */
-  getAllBotStatuses() {
-    return Object.fromEntries(this.botStatuses);
-  }
-
-  /**
-   * Reset all bot statuses to unknown
-   */
-  resetAllStatuses() {
-    const config = this.uiManager.getConfig();
-    const botNames = Object.keys(config.BOT_CONFIG || {});
-
-    botNames.forEach((botName) => {
-      this.botStatuses.set(botName, "unknown");
-    });
-
-    this.updateBotStatusList();
-  }
-
-  /**
-   * Force refresh all bot statuses by checking their processes
-   */
-  async refreshAllBotStatuses() {
-    const config = this.uiManager.getConfig();
-    const botNames = Object.keys(config.BOT_CONFIG || {});
-
-    for (const botName of botNames) {
-      if (this.botProcesses.has(botName)) {
-        await this.updateBotStatusFromProcess(botName);
-      }
-    }
-  }
-
-  /**
-   * Manually check a specific bot's process status
-   */
-  async checkBotStatus(botName) {
-    if (this.botProcesses.has(botName)) {
-      await this.updateBotStatusFromProcess(botName);
-    } else {
-      console.log(`Bot ${botName} has no tracked process`);
-    }
-  }
-
-  /**
-   * Debug: Get detailed tracking information from main process
-   */
-  async debugTracking() {
-    try {
-      console.log("=== DEBUG TRACKING INFO ===");
-      const debugInfo = await window.electronAPI.debugTrackedProcesses();
-      console.log("Debug info:", debugInfo);
-
-      console.log("=== BOT STATUS MANAGER STATE ===");
-      console.log("Bot statuses:", Object.fromEntries(this.botStatuses));
-      console.log("Bot processes:", Object.fromEntries(this.botProcesses));
-      console.log(
-        "Process check failures:",
-        Object.fromEntries(this.processCheckFailures)
-      );
-
-      console.log("=== END DEBUG ===");
-    } catch (error) {
-      console.error("Error getting debug info:", error);
-    }
-  }
-
-  /**
    * Check if a specific bot process is still running
    */
   async checkBotProcessStatus(botName) {
@@ -258,12 +233,11 @@ class BotStatusManager {
     }
 
     try {
-      // First check if we have tracked process information
+      // Check if we have tracked process information
       const trackedProcesses = await window.electronAPI.getTrackedProcesses();
       const trackedProcess = trackedProcesses[pid];
 
       if (trackedProcess && trackedProcess.hasDirectReference) {
-        // Use the direct process status check
         const result = await window.electronAPI.checkProcessStatus(pid);
         return result.isRunning ? "running" : "stopped";
       }
@@ -271,38 +245,15 @@ class BotStatusManager {
       // Fallback to regular process status check
       const result = await window.electronAPI.checkProcessStatus(pid);
 
-      // Reset failure count on successful check
-      this.processCheckFailures.delete(botName);
-
       if (result.isRunning) {
         return "running";
       } else {
         // Process is no longer running, remove it from tracking
         this.botProcesses.delete(botName);
-        this.processCheckFailures.delete(botName);
-        console.log(
-          `Process ${pid} for ${botName} has stopped, removed from tracking`
-        );
         return "stopped";
       }
     } catch (error) {
       console.error(`Error checking process status for ${botName}:`, error);
-
-      // Increment failure count
-      const failureCount = (this.processCheckFailures.get(botName) || 0) + 1;
-      this.processCheckFailures.set(botName, failureCount);
-
-      // After 3 consecutive failures, assume the process has stopped
-      if (failureCount >= 3) {
-        console.log(
-          `Process ${pid} for ${botName} failed ${failureCount} times, removing from tracking`
-        );
-        this.botProcesses.delete(botName);
-        this.processCheckFailures.delete(botName);
-        return "stopped";
-      }
-
-      // Return unknown for temporary failures
       return "unknown";
     }
   }
@@ -335,18 +286,9 @@ class BotStatusManager {
       // Update the bot status to stopped
       this.updateBotStatus(botName, "stopped");
 
-      // Update the display
+      // Update the display to refresh button text
       this.updateBotStatusList();
     }
-  }
-
-  /**
-   * Check if any bots are running
-   */
-  hasRunningBots() {
-    return Array.from(this.botStatuses.values()).some(
-      (status) => status === "running"
-    );
   }
 }
 

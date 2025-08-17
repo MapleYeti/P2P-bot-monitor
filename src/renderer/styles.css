@@ -367,6 +367,10 @@ section h2 {
     font-size: 12px;
 }
 
+.bot-actions .btn[data-bot-name] {
+    min-width: 80px;
+}
+
 /* Buttons */
 .btn {
     padding: 12px 24px;
