@@ -153,8 +153,12 @@ class EventHandlers {
       const result = await window.electronAPI.importConfig();
       if (result.success) {
         this.uiManager.setConfig(result.config);
+        // Update the original config in ConfigUI to match the imported config
+        this.configUI.setOriginalConfig(result.config);
         this.configUI.updateFormFields();
         this.configUI.updateBotsDisplay();
+        // Update Launch CLI visibility based on imported VIP features setting
+        this.configUI.updateLaunchCLIVisibility();
         this.uiManager.showSuccess(
           "Configuration imported and loaded successfully"
         );
