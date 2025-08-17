@@ -30,7 +30,7 @@ class UIManager {
   updateUI() {
     this.updateStatusIndicator();
     this.updateButtonStates();
-    this.updateConfigurationStatus();
+    // Configuration status is now handled by ConfigUI
   }
 
   updateStatusIndicator() {
@@ -62,31 +62,7 @@ class UIManager {
     }
   }
 
-  updateConfigurationStatus() {
-    const configStatusIcon = document.getElementById("configStatusIcon");
-    const configStatusText = document.getElementById("configStatusText");
-
-    if (!configStatusIcon || !configStatusText) return;
-
-    const hasLogsDir =
-      this.currentConfig.BASE_LOG_DIR &&
-      this.currentConfig.BASE_LOG_DIR.trim() !== "";
-    const hasWebhooks = Object.keys(this.currentConfig.BOT_CONFIG).length > 0;
-
-    if (hasLogsDir && hasWebhooks) {
-      configStatusIcon.textContent = "✅";
-      configStatusText.textContent = "Complete";
-      configStatusIcon.style.color = "#38a169";
-    } else if (hasLogsDir || hasWebhooks) {
-      configStatusIcon.textContent = "⚠️";
-      configStatusText.textContent = "Partial";
-      configStatusIcon.style.color = "#d69e2e";
-    } else {
-      configStatusIcon.textContent = "❌";
-      configStatusText.textContent = "Not Configured";
-      configStatusIcon.style.color = "#e53e3e";
-    }
-  }
+  // Configuration status is now handled by ConfigUI
 
   showStartupStatus(message, type = "info") {
     this.hideStartupStatus();
@@ -135,6 +111,10 @@ class UIManager {
 
   showInfo(message) {
     this.showNotification(message, "info");
+  }
+
+  showWarning(message) {
+    this.showNotification(message, "warning");
   }
 
   /**

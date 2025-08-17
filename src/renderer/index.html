@@ -47,8 +47,7 @@
                     <div class="accordion-title">
                         <h2>⚙️ Configuration</h2>
                         <div class="config-status" id="configStatus">
-                            <span class="status-icon" id="configStatusIcon">❓</span>
-                            <span class="status-text" id="configStatusText">Checking...</span>
+                            <span>✅ Saved</span>
                         </div>
                     </div>
                     <button class="accordion-toggle" id="configAccordionToggle">
@@ -81,6 +80,7 @@
                         <div class="form-actions">
                             <div class="button-row">
                                 <button type="button" id="saveConfigBtn" class="btn btn-primary">Save Configuration</button>
+                                <button type="button" id="undoChangesBtn" class="btn btn-warning" onclick="configUI.undoChanges()" disabled>Undo Changes</button>
                                 <button type="button" id="loadConfigBtn" class="btn btn-secondary">Import Configuration</button>
                                 <button type="button" id="exportConfigBtn" class="btn btn-secondary">Export Configuration</button>
                             </div>
@@ -129,6 +129,30 @@
             <div class="modal-actions">
                 <button type="button" id="saveBotBtn" class="btn btn-primary">Save</button>
                 <button type="button" id="cancelBotBtn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bot Modal -->
+    <div id="editBotModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Bot</h3>
+            <div class="form-group">
+                <label for="editBotName">Bot Name (DreamBot Log Folder):</label>
+                <input type="text" id="editBotName" placeholder="MyBot">
+            </div>
+            <div class="form-group">
+                <label for="botWebhook">Discord Webhook URL:</label>
+                <input type="text" id="editBotWebhook" placeholder="https://discord.com/api/webhooks/...">
+            </div>
+            <div class="form-group">
+                <label for="editBotLaunchCLI">Launch CLI Command (Optional):</label>
+                <input type="text" id="editBotLaunchCLI" placeholder="java -jar DreamBot.jar -script MyScript -world 301">
+                <small class="form-help">Optional: Command to run in a new terminal window when launching this bot. <strong>Requires DreamBot VIP subscription.</strong> Leave empty if not needed.</small>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="saveEditBotBtn" class="btn btn-primary">Save Changes</button>
+                <button type="button" id="cancelEditBotBtn" class="btn btn-secondary">Cancel</button>
             </div>
         </div>
     </div>

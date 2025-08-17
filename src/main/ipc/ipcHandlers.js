@@ -61,6 +61,7 @@ class IPCHandlers {
     // Launch CLI command
     ipcMain.handle("launch-cli", async (event, command) => {
       try {
+        console.log("Launching CLI command:", command);
         const child = spawn("cmd.exe", ["/k", command], {
           detached: true,
           stdio: "ignore",

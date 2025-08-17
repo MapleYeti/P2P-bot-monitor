@@ -43,17 +43,91 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("Electron listeners ready, loading configuration...");
 
     // Initialize UI components
-    configUI = new ConfigUI(uiManager);
     logDisplay = new LogDisplay(uiManager);
+    configUI = new ConfigUI(uiManager, logDisplay);
     eventHandlers = new EventHandlers(uiManager, configUI, logDisplay);
     botStatusManager = new BotStatusManager(uiManager);
 
+    // Make configUI globally accessible for onclick handlers
+    window.configUI = {
+      saveBotWebhookChanges: (originalBotName) =>
+        configUI.saveBotWebhookChanges(originalBotName),
+      cancelBotWebhookEdit: (botName) => configUI.cancelBotWebhookEdit(botName),
+      editBot: (botName) => configUI.editBot(botName),
+      removeBot: (botName) => configUI.removeBot(botName),
+      saveConfiguration: () => configUI.saveConfiguration(),
+      undoChanges: () => configUI.undoChanges(),
+    };
+
     // Load configuration and setup UI
-    await loadConfiguration();
+    try {
+      if (!window.electronAPI) {
+        throw new Error("Electron API not available");
+      }
+
+      logDisplay.addProgramLog("📋 Loading configuration...", "config", "info");
+
+      const result = await window.electronAPI.loadConfig();
+
+      // Always load the config into the form, even if there are validation errors
+      if (result.config) {
+        uiManager.setConfig(result.config);
+        // Update the original config in ConfigUI so form fields can be populated
+        configUI.setOriginalConfig(result.config);
+        configUI.updateFormFields();
+        configUI.updateBotsDisplay();
+        configUI.updateConfigurationStatus();
+
+        if (result.success) {
+          uiManager.showSuccess("Configuration loaded successfully");
+          logDisplay.addProgramLog(
+            "✅ Configuration loaded successfully",
+            "config",
+            "success"
+          );
+        } else {
+          // Show validation errors but still load the config
+          const errorMessage =
+            result.error || "Configuration has validation errors";
+          uiManager.showWarning(
+            `Configuration loaded with errors: ${errorMessage}`
+          );
+          logDisplay.addProgramLog(
+            `⚠️ Configuration loaded with errors: ${errorMessage}`,
+            "config",
+            "warning"
+          );
+
+          // If there are specific validation details, show them
+          if (result.validation && result.validation.errors) {
+            result.validation.errors.forEach((error) => {
+              logDisplay.addProgramLog(`❌ ${error}`, "config", "error");
+            });
+          }
+        }
+      } else {
+        uiManager.showInfo(
+          "No configuration file found. Please configure and save."
+        );
+        logDisplay.addProgramLog(
+          "ℹ️ No configuration file found",
+          "config",
+          "info"
+        );
+      }
+    } catch (error) {
+      console.error("Configuration loading error:", error);
+      uiManager.showError("Failed to load configuration: " + error.message);
+      logDisplay.addProgramLog(
+        `❌ Configuration loading error: ${error.message}`,
+        "config",
+        "error"
+      );
+    }
 
     // Update UI
     uiManager.updateUI();
-    
+
     // Initialize bot status display
     botStatusManager.updateBotStatusList();
 
@@ -94,6 +168,7 @@ function validateDOMElements() {
     "botWebhooks",
     "addBotBtn",
     "saveConfigBtn",
+    "undoChangesBtn",
     "loadConfigBtn",
     "exportConfigBtn",
     "toggleMonitoringBtn",
@@ -102,13 +177,19 @@ function validateDOMElements() {
     "botModal",
     "botName",
     "botWebhook",
+    "botLaunchCLI",
     "saveBotBtn",
     "cancelBotBtn",
+    "editBotModal",
+    "editBotName",
+    "editBotWebhook",
+    "editBotLaunchCLI",
+    "saveEditBotBtn",
+    "cancelEditBotBtn",
     "configAccordionHeader",
     "configAccordionToggle",
     "configAccordionContent",
-    "configStatusIcon",
-    "configStatusText",
+    "configStatus",
     "botStatusList",
   ];
 
@@ -178,53 +259,3 @@ async function setupElectronListeners() {
     setupListeners();
   });
 }
-
-// Configuration Management
-async function loadConfiguration() {
-  try {
-    if (!window.electronAPI) {
-      throw new Error("Electron API not available");
-    }
-
-    logDisplay.addProgramLog("📋 Loading configuration...", "config", "info");
-
-    const result = await window.electronAPI.loadConfig();
-    if (result.success) {
-      uiManager.setConfig(result.config);
-      configUI.updateFormFields();
-      configUI.updateBotWebhooksDisplay();
-      uiManager.showSuccess("Configuration loaded successfully");
-      logDisplay.addProgramLog(
-        "✅ Configuration loaded successfully",
-        "config",
-        "success"
-      );
-    } else {
-      uiManager.showInfo(
-        "No configuration file found. Please configure and save."
-      );
-      logDisplay.addProgramLog(
-        "ℹ️ No configuration file found",
-        "config",
-        "info"
-      );
-    }
-  } catch (error) {
-    console.error("Configuration loading error:", error);
-    uiManager.showError("Failed to load configuration: " + error.message);
-    logDisplay.addProgramLog(
-      `❌ Configuration loading error: ${error.message}`,
-      "config",
-      "error"
-    );
-  }
-}
-
-// Make configUI globally accessible for onclick handlers
-window.configUI = {
-  saveBotWebhookChanges: (originalBotName) =>
-    configUI?.saveBotWebhookChanges(originalBotName),
-  cancelBotWebhookEdit: (botName) => configUI?.cancelBotWebhookEdit(botName),
-  editBotWebhook: (botName) => configUI?.editBotWebhook(botName),
-  removeBotWebhook: (botName) => configUI?.removeBotWebhook(botName),
-};
