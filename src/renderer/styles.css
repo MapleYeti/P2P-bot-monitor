@@ -161,6 +161,24 @@ section h2 {
     border-color: rgba(102, 126, 234, 0.3);
 }
 
+.config-status.saved {
+    background: rgba(56, 161, 105, 0.1);
+    border-color: rgba(56, 161, 105, 0.2);
+    color: #38a169;
+}
+
+.config-status.unsaved {
+    background: rgba(246, 173, 85, 0.1);
+    border-color: rgba(246, 173, 85, 0.2);
+    color: #f6ad55;
+}
+
+.config-status.error {
+    background: rgba(245, 101, 101, 0.1);
+    border-color: rgba(245, 101, 101, 0.2);
+    color: #f56565;
+}
+
 .status-icon {
     font-size: 16px;
 }
@@ -433,13 +451,20 @@ section h2 {
 }
 
 .btn-warning {
-    background: #d69e2e;
+    background: #f6ad55;
     color: white;
 }
 
 .btn-warning:hover {
-    background: #b7791f;
+    background: #ed8936;
 }
+
+.btn-warning:disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
+}
+
+
 
 .btn-small {
     padding: 8px 16px;
@@ -453,63 +478,51 @@ section h2 {
 
 .bot-webhook-item {
     display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
     align-items: center;
-    padding: 12px;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.bot-webhook-item input {
+.bot-name-display {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 120px;
+    font-size: 16px;
+}
+
+.bot-config-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+}
+
+.config-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-icon {
+    font-size: 16px;
+}
+
+.status-text {
     font-size: 14px;
-    transition: border-color 0.3s ease;
+    color: #a0aec0;
 }
 
-.bot-webhook-item input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.bot-webhook-item input[readonly] {
-    background-color: #f7fafc;
-    color: #4a5568;
-    cursor: not-allowed;
-}
-
-.bot-webhook-item input:not([readonly]) {
-    background-color: white;
-    color: #2d3748;
-    cursor: text;
-    border-color: #667eea;
-}
-
-.bot-webhook-item.editing {
-    border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-    background: rgba(102, 126, 234, 0.05);
-}
-
-.bot-webhook-item.editing input {
-    border-color: #667eea;
-    background-color: white;
-}
-
-.bot-webhook-item .bot-name-input {
+.bot-actions {
+    display: flex;
+    gap: 8px;
     min-width: 120px;
 }
 
-.bot-webhook-item .webhook-url-input {
-    min-width: 200px;
-}
-
-.bot-webhook-item .btn {
+.bot-actions .btn {
     white-space: nowrap;
     min-width: 60px;
 }
@@ -715,6 +728,10 @@ section h2 {
 
 .notification-info {
     background: #3182ce;
+}
+
+.notification-warning {
+    background: #d69e2e;
 }
 
 /* Startup status overlay styles */

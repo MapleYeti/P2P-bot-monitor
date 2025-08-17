@@ -26,7 +26,9 @@ class EventHandlers {
     // Setup event listeners
     selectDirBtn?.addEventListener("click", () => this.selectDirectory());
     addBotBtn?.addEventListener("click", () => this.configUI.showAddBotModal());
-    saveConfigBtn?.addEventListener("click", () => this.saveConfiguration());
+    saveConfigBtn?.addEventListener("click", () =>
+      this.configUI.saveConfiguration()
+    );
     loadConfigBtn?.addEventListener("click", () => this.importConfiguration());
     exportConfigBtn?.addEventListener("click", () =>
       this.exportConfiguration()
@@ -38,7 +40,7 @@ class EventHandlers {
     clearLogsBtn?.addEventListener("click", () => this.logDisplay.clearLogs());
 
     // Modal events
-    saveBotBtn?.addEventListener("click", () => this.configUI.saveBotWebhook());
+    saveBotBtn?.addEventListener("click", () => this.configUI.saveBot());
     cancelBotBtn?.addEventListener("click", () =>
       this.configUI.hideAddBotModal()
     );
@@ -49,6 +51,32 @@ class EventHandlers {
         this.configUI.hideAddBotModal();
       }
     });
+
+    // Edit bot modal event handlers
+    const saveEditBotBtn = document.getElementById("saveEditBotBtn");
+    const cancelEditBotBtn = document.getElementById("cancelEditBotBtn");
+    const editBotModal = document.getElementById("editBotModal");
+
+    if (saveEditBotBtn) {
+      saveEditBotBtn.addEventListener("click", () => {
+        this.configUI.saveBotEdit();
+      });
+    }
+
+    if (cancelEditBotBtn) {
+      cancelEditBotBtn.addEventListener("click", () => {
+        this.configUI.hideEditBotModal();
+      });
+    }
+
+    // Close edit modal when clicking outside
+    if (editBotModal) {
+      editBotModal.addEventListener("click", (e) => {
+        if (e.target === editBotModal) {
+          this.configUI.hideEditBotModal();
+        }
+      });
+    }
   }
 
   async selectDirectory() {
@@ -72,7 +100,6 @@ class EventHandlers {
         if (logsDir) {
           logsDir.value = selectedPath;
           this.uiManager.updateConfigField("BASE_LOG_DIR", selectedPath);
-          this.uiManager.updateConfigurationStatus();
           this.uiManager.showSuccess("Directory selected successfully");
 
           this.logDisplay.addProgramLog(
@@ -87,71 +114,6 @@ class EventHandlers {
       this.uiManager.showError("Failed to select directory: " + error.message);
       this.logDisplay.addProgramLog(
         `❌ Directory selection error: ${error.message}`,
-        "config",
-        "error"
-      );
-    }
-  }
-
-  async saveConfiguration() {
-    try {
-      if (!this.isElectronAPIAvailable()) {
-        this.uiManager.showError(
-          "Electron API not available. Please wait for the application to fully load."
-        );
-        return;
-      }
-
-      const logsDir = document.getElementById("logsDir");
-      const chatWebhook = document.getElementById("chatWebhook");
-
-      if (!logsDir || !chatWebhook) return;
-
-      // Update config from form fields
-      this.uiManager.updateConfigField("BASE_LOG_DIR", logsDir.value.trim());
-      this.uiManager.updateConfigField(
-        "BOT_CHAT_WEBHOOK_URL",
-        chatWebhook.value.trim()
-      );
-
-      if (!this.uiManager.getConfig().BASE_LOG_DIR) {
-        this.uiManager.showError("DreamBot Logs Directory is required");
-        return;
-      }
-
-      this.logDisplay.addProgramLog(
-        "💾 Saving configuration...",
-        "config",
-        "info"
-      );
-
-      const result = await window.electronAPI.saveConfig(
-        this.uiManager.getConfig()
-      );
-      if (result.success) {
-        this.uiManager.updateConfigurationStatus();
-        this.uiManager.showSuccess("Configuration saved successfully");
-        this.logDisplay.addProgramLog(
-          "✅ Configuration saved successfully",
-          "config",
-          "success"
-        );
-      } else {
-        this.uiManager.showError(
-          "Failed to save configuration: " + result.error
-        );
-        this.logDisplay.addProgramLog(
-          `❌ Failed to save configuration: ${result.error}`,
-          "config",
-          "error"
-        );
-      }
-    } catch (error) {
-      this.uiManager.showError(
-        "Failed to save configuration: " + error.message
-      );
-      this.logDisplay.addProgramLog(
-        `❌ Save configuration error: ${error.message}`,
         "config",
         "error"
       );
@@ -192,7 +154,7 @@ class EventHandlers {
       if (result.success) {
         this.uiManager.setConfig(result.config);
         this.configUI.updateFormFields();
-        this.configUI.updateBotWebhooksDisplay();
+        this.configUI.updateBotsDisplay();
         this.uiManager.showSuccess(
           "Configuration imported and loaded successfully"
         );

@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import { dialog } from "electron";
 import { error, warn } from "./logging/logger.js";
+import { validateConfig } from "../../shared/configValidator.js";
 
 class FileConfigManager {
   constructor() {
@@ -30,19 +31,35 @@ class FileConfigManager {
         }
 
         // Validate the loaded configuration
-        const validation = this.validateConfig(config);
+        const validation = validateConfig(config);
+
+        // Log warnings and errors
+        validation.warnings.forEach((warning) => warn(warning, "Config"));
         if (!validation.success) {
-          return {
-            success: false,
-            error: validation.error,
-            config: config, // Still return config for debugging
-            validation: validation,
-          };
+          validation.errors.forEach((err) => error(err, "Config"));
         }
 
-        return { success: true, config, validation };
+        // Always return the config and validation result, regardless of success
+        return {
+          success: validation.success,
+          config,
+          validation,
+          error: validation.success ? null : validation.error,
+        };
       } else {
-        return { success: false, error: "No configuration file found" };
+        // No configuration file found, create a default one
+        console.log(
+          "No configuration file found, creating default configuration..."
+        );
+        const result = await this.createDefaultConfig();
+        if (result.success) {
+          return { success: true, config: result.config, isDefault: true };
+        } else {
+          return {
+            success: false,
+            error: "Failed to create default configuration: " + result.error,
+          };
+        }
       }
     } catch (error) {
       return { success: false, error: error.message };
@@ -106,8 +123,12 @@ class FileConfigManager {
       config.BOT_CONFIG = this.convertBotConfigToNewFormat(config.BOT_CONFIG);
 
       // Validate the converted config structure
-      const validation = this.validateConfig(config);
+      const validation = validateConfig(config);
+
+      // Log warnings and errors
+      validation.warnings.forEach((warning) => warn(warning, "Config"));
       if (!validation.success) {
+        validation.errors.forEach((err) => error(err, "Config"));
         return validation;
       }
 
@@ -160,66 +181,6 @@ class FileConfigManager {
   }
 
   /**
-   * Validate configuration object
-   * @param {Object} config - Configuration object to validate
-   * @returns {Object} Validation result with success status, errors, and warnings
-   */
-  validateConfig(config) {
-    const errors = [];
-    const warnings = [];
-
-    // Check required fields
-    if (!config.BASE_LOG_DIR) {
-      errors.push("BASE_LOG_DIR is required");
-    } else if (!config.BASE_LOG_DIR.trim()) {
-      errors.push("BASE_LOG_DIR cannot be empty");
-    }
-
-    // BOT_CHAT_WEBHOOK_URL is optional - only validate if provided
-    if (config.BOT_CHAT_WEBHOOK_URL && config.BOT_CHAT_WEBHOOK_URL.trim()) {
-      if (!this.isValidWebhookUrl(config.BOT_CHAT_WEBHOOK_URL)) {
-        errors.push("BOT_CHAT_WEBHOOK_URL must be a valid Discord webhook URL");
-      }
-    }
-
-    // Check bot webhooks
-    if (!config.BOT_CONFIG || Object.keys(config.BOT_CONFIG).length === 0) {
-      warnings.push(
-        "No bot webhooks configured - level up and quest notifications will not work"
-      );
-    } else {
-      // Validate each bot webhook
-      for (const [botName, botConfig] of Object.entries(config.BOT_CONFIG)) {
-        if (!botConfig.webhookUrl || !botConfig.webhookUrl.trim()) {
-          errors.push(`Webhook URL for bot "${botName}" is empty`);
-        } else if (!this.isValidWebhookUrl(botConfig.webhookUrl)) {
-          errors.push(`Invalid webhook URL for bot "${botName}"`);
-        }
-      }
-    }
-
-    // Log warnings
-    warnings.forEach((warning) => warn(warning, "Config"));
-
-    // Log errors and return validation result
-    if (errors.length > 0) {
-      errors.forEach((err) => error(err, "Config"));
-      return {
-        success: false,
-        errors,
-        warnings,
-        error: `Configuration validation failed: ${errors.join(", ")}`,
-      };
-    }
-
-    return {
-      success: true,
-      errors: [],
-      warnings,
-    };
-  }
-
-  /**
    * Convert old bot configuration format to new standardized format
    * @param {Object} botConfig - Bot configuration object (old or new format)
    * @returns {Object} - Standardized bot configuration
@@ -267,24 +228,6 @@ class FileConfigManager {
     }
 
     return convertedConfig;
-  }
-
-  /**
-   * Check if a string is a valid Discord webhook URL
-   * @param {string} url - URL to validate
-   * @returns {boolean} - Whether URL is valid
-   */
-  isValidWebhookUrl(url) {
-    try {
-      const urlObj = new URL(url);
-      return (
-        urlObj.hostname === "discord.com" &&
-        urlObj.pathname.startsWith("/api/webhooks/") &&
-        urlObj.pathname.split("/").length >= 4
-      );
-    } catch {
-      return false;
-    }
   }
 
   /**
