@@ -28,7 +28,7 @@ class WindowManager {
         preload: preloadPath,
       },
       icon: path.join(__dirname, "..", "..", "..", "resources", "icon.ico"),
-      title: "RuneScape Bot Monitor",
+      title: "DreamBot Dashboard",
     });
 
     // Update global reference for logger
