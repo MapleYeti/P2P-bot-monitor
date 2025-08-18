@@ -1,3 +1,5 @@
+# This prototype is deprecated, see [DreamBot Dashboard](https://github.com/MapleYeti/DreamBot-Dashboard) for full release
+
 # DreamBot Bot Monitor
 
 A modern application for monitoring DreamBot logs, managing bot configurations, and launching bots via CLI commands. Features real-time Discord notifications and an intuitive configuration interface.
